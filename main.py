@@ -264,7 +264,7 @@ if __name__ == '__main__':
                                 # Specify properties of letter_grade if needed
                                 "properties": {
                                     "min_satisfactory": {
-                                        "bsonType": "string",
+                                        'enum': ["A", "B", "C"],
                                         "description": "must be a string and is required if bsonType is letter_grade"
                                     }
                                 }
@@ -290,6 +290,7 @@ if __name__ == '__main__':
                         'required': ['major_name', 'declaration_date'],
                         'properties': {
                             'major_name': {'bsonType': 'string'},
+                            # TODO: add constraint - "declrationDate <= today"
                             'declaration_date': {'bsonType': 'string'}  # Assuming declaration_date is a string
                         }
                     }
@@ -310,7 +311,7 @@ if __name__ == '__main__':
                     'description': 'must be an integer and is required'
                 },
                 'semester': {
-                    'bsonType': 'string',
+                    'enum': ["Fall", "Spring", "Summer I", "Summer II", "Summer III", "Winter"],
                     'description': 'must be a string and is required'
                 },
                 'section_year': {
@@ -318,18 +319,21 @@ if __name__ == '__main__':
                     'description': 'must be an integer and is required'
                 },
                 'building': {
-                    'bsonType': 'string',
+                    'enum': ["ANAC", "CDC", "DC", "ECS", "EN2", "EN3", "EN4", "EN5", "ET", "HSCI", "NUR", "VEC"],
                     'description': 'must be a string and is required'
                 },
                 'room': {
                     'bsonType': 'int',
+                    'minimum': 1,
+                    'maximum': 999,
                     'description': 'must be an integer and is required'
                 },
                 'schedule': {
-                    'bsonType': 'string',
+                    'enum': ["MW", "TuTh", "MWF", "F", "S"],
                     'description': 'must be a string and is required'
                 },
                 'start_time': {
+                    # TODO: add constraint - "startTime >= 8:00AM and <= 7:30PM"
                     'bsonType': 'string',
                     'description': 'must be a string and is required'
                 },
@@ -360,6 +364,8 @@ if __name__ == '__main__':
                     },
                     'course_number': {
                         'bsonType': 'int',
+                        'minimum': 100,
+                        'maximum': 699,
                         'description': 'must be an integer and is required'
                     },
                     'name': {
@@ -372,6 +378,8 @@ if __name__ == '__main__':
                     },
                     'units': {
                         'bsonType': 'int',
+                        'minimum': 1,
+                        'maximum': 5,
                         'description': 'must be an integer and is required'
                     }
                 }
@@ -392,13 +400,6 @@ if __name__ == '__main__':
                     'department_abbreviation': {
                         'bsonType': 'string',
                         'description': 'must be a string and is required, referring to the department offering the major'
-                    },
-                    'requirements': {
-                        'bsonType': 'array',
-                        'items': {
-                            'bsonType': 'string',
-                            'description': 'must be strings representing course numbers or other requirement identifiers'
-                        }
                     }
                 }
             }
@@ -409,32 +410,43 @@ if __name__ == '__main__':
         'validator': {
             '$jsonSchema': {
                 'bsonType': 'object',
+                'description': 'the basic administrative unit within the University organized to carry on and develop'
+                               ' the instructional and research activities of its faculty.',
                 'required': ['abbreviation', 'name', 'chair_name', 'building', 'room', 'description'],
+                'additionalProperties': False,
                 'properties': {
-                    'abbreviation': {
-                        'bsonType': 'string',
-                        'description': 'must be a string and is required'
-                    },
+                    '_id': {},
                     'name': {
-                        'bsonType': 'string',
-                        'description': 'must be a string and is required'
+                        'bsonType': "string",
+                        'description': "The label that identifies a singular department."
+                    },
+                    'abbreviation': {
+                        'bsonType': "string",
+                        "minLength": 1,
+                        "maxLength": 6,
+                        'description': "A shortened string that identifies a singular department"
                     },
                     'chair_name': {
-                        'bsonType': 'string',
-                        'description': 'must be a string and is required'
+                        'bsonType': "string",
+                        "minLength": 1,
+                        "maxLength": 80,
+                        'description': "The person who is in charge of the department"
                     },
                     'building': {
-                        'bsonType': 'string',
-                        'description': 'must be a string and is required'
+                        'enum': ["ANAC", "CDC", "DC", "ECS", "EN2", "EN3", "EN4", "EN5", "ET", "HSCI", "NUR", "VEC"],
+                        'description': "The string name of the structure the head office of the department will be"
                     },
-                    'room': {
-                        'bsonType': 'int',
-                        'description': 'must be an integer and is required'
+                    'office': {
+                        'bsonType': "int",
+                        'minimum': 1,
+                        'description': "An integer identifying the room the head office of"
+                                       " the department will be"
                     },
                     'description': {
-                        'bsonType': 'string',
-                        'description': 'must be a string and is required'
-                    }
+                        'bsonType': "string",
+                        "maxLength": 80,
+                        'description': "A sentence describing the department"
+                    },
                 }
             }
         }
@@ -444,3 +456,18 @@ if __name__ == '__main__':
         "validator": students_validator
     })
     collection.insert_one(student)
+
+    """Department Uniqueness Constraints"""
+    departments.create_index([('abbreviation', pymongo.ASCENDING)], unique=True, name="departments_abbreviations")
+    departments.create_index([('chair_name', pymongo.ASCENDING)], unique=True, name='departments_chair_names')
+    departments.create_index([('building', pymongo.ASCENDING), ('office', pymongo.ASCENDING)],
+                             unique=True, name="departments_buildings_and_offices")
+    departments.create_index([('name', pymongo.ASCENDING)], unique=True, name="departments_names")
+
+
+    #main menu running
+    main_action: str = ''
+    while main_action != menu_main.last_action():
+        main_action = menu_main.menu_prompt()
+        print('next action: ', main_action)
+        exec(main_action)

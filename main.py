@@ -8,6 +8,7 @@ from menu_definitions import add_menu
 from menu_definitions import delete_menu
 from menu_definitions import list_menu
 
+
 def add(db):
     """
     Present the add menu and execute the user's selection.
@@ -199,258 +200,247 @@ if __name__ == '__main__':
     # As a test that the connection worked, print out the database names.
     print(client.list_database_names())
     # db will be the way that we refer to the database from here on out.
+
     db = client["Demonstration"]
     # Print off the collections that we have available to us, again more of a test than anything.
     print(db.list_collection_names())
 
-    students_validator = {
-      'validator': {
-        '$jsonSchema': {
-          'bsonType': 'object',
-          'required': ['student_id', 'last_name', 'first_name', 'email', 'enrollments', 'student_majors', 'section_details'],
-          'properties': {
-            'student_id': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
-            },
-            'last_name': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'first_name': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'email': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'enrollments': {
-              'bsonType': 'array',
-              'items': {
-                'bsonType': 'object',
-                'required': ['enrollment_id', 'type', 'section_details'],
-                'properties': {
-                  'enrollment_id': {
-                    'bsonType': 'int',
-                    'description': 'must be an integer and is required'
-                  },
-                  'type': {
-                    'enum': ['letter_grade', 'pass_fail'],
-                    'description': 'can only be one of the enum values and is required'
-                  },
-                  'section_details': {
-                    'bsonType': 'object',
-                    'description': 'must be an object and is required'
-                    # Specify properties of section_details if needed
-                  },
-                  'letter_grade': {
-                    'bsonType': 'object',
-                    'description': 'must be an object if type is letter_grade'
-                    # Specify properties of letter_grade if needed
-                  },
-                  'pass_fail': {
-                    'bsonType': 'object',
-                    'description': 'must be an object if type is pass_fail'
-                    # Specify properties of pass_fail if needed
-                  }
-                }
-              }
-            },
-            'student_majors': {
-              'bsonType': 'array',
-              'items': {
-                'bsonType': 'object',
-                'required': ['major_name', 'declaration_date'],
-                'properties': {
-                  'major_name': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                  },
-                  'declaration_date': {
-                    'bsonType': 'date',
-                    'description': 'must be a date and is required'
-                  }
-                }
-              }
-            },
-            'section_details': {
-              'bsonType': 'array',
-              'items': {
-                'bsonType': 'object',
-                'required': ['department_abbreviation', 'course_number', 'section_number', 'semester', 'section_year'],
-                'properties': {
-                  'department_abbreviation': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                  },
-                  'course_number': {
-                    'bsonType': 'int',
-                    'description': 'must be an integer and is required'
-                  },
-                  'section_number': {
-                    'bsonType': 'int',
-                    'description': 'must be an integer and is required'
-                  },
-                  'semester': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                  },
-                  'section_year': {
-                    'bsonType': 'int',
-                    'description': 'must be an integer and is required'
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+    # db.create_collection("students")
+    collection = db['students']
+    student_majors = {
+        'name': 'CS',
+        'declaration_date': '10/30/10'
     }
 
-    sections_validator = {
-      'validator': {
+    section_details = {
+        'department_abbreviation': 'MED',
+        'course_number': 1,
+        'section_number': 1,
+        'semester': 'Fall',
+        'section_year': 2023,
+    }
+
+    enrollment = {
+        'type': 'letter_grade',
+        'section_details': section_details,
+    }
+
+    student = {
+        'first_name': "Jane",
+        'last_name': "Smith",
+        'email': "email@mail.com",
+        'enrollments': enrollment,
+        'student_majors': student_majors
+    }
+
+    students_validator = {
         '$jsonSchema': {
-          'bsonType': 'object',
-          'required': ['section_number', 'semester', 'section_year', 'building', 'room', 'schedule', 'start_time', 'instructor', 'course_details', 'student_ids'],
-          'properties': {
-            'section_number': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
-            },
-            'semester': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'section_year': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
-            },
-            'building': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'room': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
-            },
-            'schedule': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'start_time': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'instructor': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'course_details': {
-              'bsonType': 'object',
-              'description': 'must be an object and is required'
-              # Define properties of course_details if necessary
-            },
-            'student_ids': {
-              'bsonType': 'array',
-              'items': {
-                'bsonType': 'int',
-                'description': 'must be integers representing student IDs'
-              }
+            'bsonType': 'object',
+            'required': ['last_name', 'first_name', 'email'],
+            'properties': {
+                'last_name': {'bsonType': 'string'},
+                'first_name': {'bsonType': 'string'},
+                'email': {'bsonType': 'string'},
+                'enrollments': {
+                    'bsonType': 'object',
+                    'items': {
+                        'bsonType': 'object',
+                        'required': ['type', 'section_details'],
+                        'properties': {
+                            'type': {'enum': ['letter_grade', 'pass_fail']},
+                            'section_details': {
+                                'bsonType': 'object',
+                                'items': [
+                                    {'bsonType': 'string'},  # Assuming all elements in section_details are strings
+                                    {'bsonType': 'int'},
+                                    {'bsonType': 'int'},
+                                    {'bsonType': 'string'},
+                                    {'bsonType': 'int'}
+                                ],
+                            },
+                            'letter_grade': {
+                                'bsonType': 'object',
+                                'description': 'must be an object if bsonType is letter_grade',
+                                # Specify properties of letter_grade if needed
+                                "properties": {
+                                    "min_satisfactory": {
+                                        "bsonType": "string",
+                                        "description": "must be a string and is required if bsonType is letter_grade"
+                                    }
+                                }
+                            },
+                            'pass_fail': {
+                                'bsonType': 'object',
+                                'description': 'must be an object if bsonType is pass_fail',
+                                # Specify properties of pass_fail if needed
+                                "properties": {
+                                    "application_date": {
+                                        "bsonType": "string",
+                                        "description": "must be a string and is required if bsonType is pass_fail"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                'student_majors': {
+                    'bsonType': 'object',
+                    'items': {
+                        'bsonType': 'array',
+                        'required': ['major_name', 'declaration_date'],
+                        'properties': {
+                            'major_name': {'bsonType': 'string'},
+                            'declaration_date': {'bsonType': 'string'}  # Assuming declaration_date is a string
+                        }
+                    }
+                }
             }
-          }
         }
-      }
+    }
+
+    # db.create_collection('students', students_validator)
+    sections_validator = {
+        '$jsonSchema': {
+            'bsonType': 'object',
+            'required': ['section_number', 'semester', 'section_year', 'building', 'room', 'schedule', 'start_time',
+                         'instructor', 'student_ids'],
+            'properties': {
+                'section_number': {
+                    'bsonType': 'int',
+                    'description': 'must be an integer and is required'
+                },
+                'semester': {
+                    'bsonType': 'string',
+                    'description': 'must be a string and is required'
+                },
+                'section_year': {
+                    'bsonType': 'int',
+                    'description': 'must be an integer and is required'
+                },
+                'building': {
+                    'bsonType': 'string',
+                    'description': 'must be a string and is required'
+                },
+                'room': {
+                    'bsonType': 'int',
+                    'description': 'must be an integer and is required'
+                },
+                'schedule': {
+                    'bsonType': 'string',
+                    'description': 'must be a string and is required'
+                },
+                'start_time': {
+                    'bsonType': 'string',
+                    'description': 'must be a string and is required'
+                },
+                'instructor': {
+                    'bsonType': 'string',
+                    'description': 'must be a string and is required'
+                },
+                'student_references': {
+                    'bsonType': 'array',
+                    'items': {
+                        'bsonType': 'int',
+                        'description': 'must be integers representing student IDs'
+                    }
+                }
+            }
+        }
     }
 
     courses_validator = {
-      'validator': {
-        '$jsonSchema': {
-          'bsonType': 'object',
-          'required': ['department_abbreviation', 'course_number', 'name', 'description', 'units'],
-          'properties': {
-            'department_abbreviation': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'course_number': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
-            },
-            'name': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'description': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'units': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
+        'validator': {
+            '$jsonSchema': {
+                'bsonType': 'object',
+                'required': ['department_abbreviation', 'course_number', 'name', 'description', 'units'],
+                'properties': {
+                    'department_abbreviation': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'course_number': {
+                        'bsonType': 'int',
+                        'description': 'must be an integer and is required'
+                    },
+                    'name': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'description': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'units': {
+                        'bsonType': 'int',
+                        'description': 'must be an integer and is required'
+                    }
+                }
             }
-          }
         }
-      }
     }
 
     majors_validator = {
-      'validator': {
-        '$jsonSchema': {
-          'bsonType': 'object',
-          'required': ['name', 'department_abbreviation', 'requirements'],
-          'properties': {
-            'name': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'department_abbreviation': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required, referring to the department offering the major'
-            },
-            'requirements': {
-              'bsonType': 'array',
-              'items': {
-                'bsonType': 'string',
-                'description': 'must be strings representing course numbers or other requirement identifiers'
-              }
+        'validator': {
+            '$jsonSchema': {
+                'bsonType': 'object',
+                'required': ['name', 'department_abbreviation', 'requirements'],
+                'properties': {
+                    'name': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'department_abbreviation': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required, referring to the department offering the major'
+                    },
+                    'requirements': {
+                        'bsonType': 'array',
+                        'items': {
+                            'bsonType': 'string',
+                            'description': 'must be strings representing course numbers or other requirement identifiers'
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
 
     departments_validator = {
-      'validator': {
-        '$jsonSchema': {
-          'bsonType': 'object',
-          'required': ['abbreviation', 'name', 'chair_name', 'building', 'room', 'description'],
-          'properties': {
-            'abbreviation': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'name': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'chair_name': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'building': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
-            },
-            'room': {
-              'bsonType': 'int',
-              'description': 'must be an integer and is required'
-            },
-            'description': {
-              'bsonType': 'string',
-              'description': 'must be a string and is required'
+        'validator': {
+            '$jsonSchema': {
+                'bsonType': 'object',
+                'required': ['abbreviation', 'name', 'chair_name', 'building', 'room', 'description'],
+                'properties': {
+                    'abbreviation': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'name': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'chair_name': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'building': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    },
+                    'room': {
+                        'bsonType': 'int',
+                        'description': 'must be an integer and is required'
+                    },
+                    'description': {
+                        'bsonType': 'string',
+                        'description': 'must be a string and is required'
+                    }
+                }
             }
-          }
         }
-      }
     }
+    db.command({
+        "collMod": "students",
+        "validator": students_validator
+    })
+    collection.insert_one(student)

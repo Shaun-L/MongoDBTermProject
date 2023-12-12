@@ -1,4 +1,3 @@
-
 students_validator = {
     '$jsonSchema': {
         'bsonType': 'object',
@@ -70,7 +69,7 @@ sections_validator = {
     '$jsonSchema': {
         'bsonType': 'object',
         'required': ['section_number', 'semester', 'section_year', 'building', 'room', 'schedule', 'start_time',
-                     'instructor', 'student_ids'],
+                     'instructor', 'student_references'],
         'properties': {
             'section_number': {
                 'bsonType': 'int',
@@ -154,19 +153,18 @@ courses_validator = {
 }
 
 majors_validator = {
-    'validator': {
-        '$jsonSchema': {
-            'bsonType': 'object',
-            'required': ['name', 'department_abbreviation', 'requirements'],
-            'properties': {
-                'name': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                },
-                'department_abbreviation': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required, referring to the department offering the major'
-                }
+    '$jsonSchema': {
+        'bsonType': 'object',
+        'required': ['name', 'department_abbreviation'],
+        'properties': {
+            'name': {
+                'bsonType': 'string',
+                'enum': ["Biology", "Computer Science", "Mathematics"],
+                'description': 'must be a string and is required'
+            },
+            'department_abbreviation': {
+                'bsonType': 'string',
+                'description': 'must be a string and is required, referring to the department offering the major'
             }
         }
     }

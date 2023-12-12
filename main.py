@@ -189,7 +189,7 @@ def list_department(db):
         pprint(department)
 
 
-#-----------------------------ENROLLMENT FUNCTIONS--------------------------------
+
 
 def add_enrollment(db):
 
@@ -197,16 +197,16 @@ def add_enrollment(db):
     collection = db['students']
 
     #gather student information
-    first_name: str = input("Student first name: ")
-    last_name: str = input("Student last name: ")
-    email: str = input("Student email: ")
+    first_name = input("Student first name: ")
+    last_name = input("Student last name: ")
+    email = input("Student email: ")
 
     #gather the section's information of which the student will be enrolled in
     department_abbreviation = input("(string) Department abbreviation: ")
-    course_number = input("(int) Course number: ")
-    section_number = input("(int) Section number: ")
+    course_number = int(input("(int) Course number: "))  # Convert to integer
+    section_number = int(input("(int) Section number: "))  # Convert to integer
     semester = input("(string) Semester: ")
-    section_year = input("(int) Section Year: ")
+    section_year = int(input("(int) Section Year: "))  # Convert to integer
 
     #after getting input, insert into the sections detail object
     section_details = {
@@ -256,6 +256,83 @@ def add_enrollment(db):
         print(exception)
 
 
+def list_enrollment(db):
+    collection = db['students']
+
+    first_name: str = ''
+    last_name: str = ''
+    email: str = ''
+
+
+    #gather some information about the student
+    print("Give student details to list their enrollments")
+    first_name = input("Student's first name: ")
+    last_name = input("Student's last name: ")
+    email = input("Student's email: ")
+
+    #Find student in the collection
+    student = collection.find_one(
+        {"first_name": first_name, "last_name": last_name, "email": email}
+    )
+
+    #Now check if the student was found
+    if student:
+        print(f"\nListing enrollments for {first_name}  {last_name} ({email}):")
+        enrollments = student.get('enrollments', [])
+        if enrollments:
+            for i, enrollment in enumerate(enrollments, 1):
+                print(f"\nEnrollment {i}:")
+                for key, value in enrollment.items():
+                    print(f"  {key}: {value}")
+        else:
+            print("No enrollments found for this student.")
+    else:
+        print("Student not found. Please check the entered details.")
+
+
+
+
+def delete_enrollment(db):
+    collection = db['students']
+
+    #get some infomration about the student
+    first_name = input("Student's first name: ")
+    last_name = input("Student's last name: ")
+    email = input("Student's email: ")
+
+
+    #get some info about the section to identify the enrollment to delete
+    department_abbreviation = input("(string) Department abbreviation: ")
+    course_number = int(input("(int) Course number: "))  # Convert to integer
+    section_number = int(input("(int) Section number: "))  # Convert to integer
+    semester = input("(string) Semester: ")
+    section_year = int(input("(int) Section Year: "))  # Convert to integer
+
+    #create the section details object to find
+    section_details = {
+        "department_abbreviation": department_abbreviation,
+        "course_number": course_number,
+        "section_number": section_number,
+        "semester": semester,
+        "section_year": section_year
+    }
+
+
+    #find student and delete specific enrollment
+    try:
+        update_result = collection.update_one(
+            {"first_name": first_name, "last_name": last_name, "email": email},
+            {"$pull": {"enrollments": {"section_details": section_details}}}
+        )
+        if update_result.matched_count == 0: #check if student found
+            print("No matching student found. Check the entered student details")
+        elif update_result.modified_count == 0: #check for enrollment (pulled out nothing)
+            print("Enrollment data was not found or not removed.")
+        else:   #success
+            print("Enrollment was deleted successfully.")
+    except Exception as exception:
+        print("Error deleting enrollment")
+        print(exception)
 
 def add_student(db):
     valid_student = False

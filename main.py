@@ -196,7 +196,6 @@ def add_student(db):
         # Create a "pointer" to the students collection within the db database.
         unique_email_student: bool = False
 
-        name: str = ''
         last_name: str = ''
         first_name: str = ''
         email: str = ''
@@ -228,9 +227,37 @@ def add_student(db):
             print("Please re-enter your values")
 
 
+def select_student(db):
+    collection = db["students"]
+    found: bool = False
+    first_name: str = ''
+    last_name: str = ''
+    email: str = ''
+    while not found:
+        first_name = input("Student's first name--> ")
+        last_name = input("Student's last name--> ")
+        email = input("Student's email--> ")
+        name_email_count: int = collection.count_documents(
+            {"first_name": first_name, "last_name": last_name, "email": email})
+        found = name_email_count == 1
+        if not found:
+            print("No student found by that name and email.  Try again.")
+    # found_department = collection.find_one({"name": name, "abbreviation": abbreviation})
+    found_student = collection.find_one(
+        {"first_name": first_name, "last_name": last_name, "email": email})
+    return found_student
+
+
+def delete_student(db):
+    student = select_student(db)
+    students = db["students"]
+    deleted = students.delete_one({"_id": student["_id"]})
+    print(f"We just deleted: {deleted.deleted_count} departments.")
+
+
 if __name__ == '__main__':
     password: str = getpass.getpass('Mongo DB password -->')
-    username: str = input('Database username [shaunlim] -->')
+    username: str = input('Database username [username] -->')
     project: str = input('Mongo project name [cecs-323-fall] -->')
     hash_name: str = input('7-character database hash [44qveqy] -->')
     cluster = f"mongodb+srv://{username}:{password}@{project}.{hash_name}.mongodb.net/?retryWrites=true&w=majority"

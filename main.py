@@ -189,6 +189,45 @@ def list_department(db):
         pprint(department)
 
 
+def add_student(db):
+    valid_student = False
+    collection = db["students"]
+    while not valid_student:
+        # Create a "pointer" to the students collection within the db database.
+        unique_email_student: bool = False
+
+        name: str = ''
+        last_name: str = ''
+        first_name: str = ''
+        email: str = ''
+
+        while not unique_email_student:
+            last_name = input("Student last name--> ")
+            first_name = input("Student first name--> ")
+
+            email = input("Student email--> ")
+
+            name_email_count: int = collection.count_documents(
+                {"first_name": first_name, "last_name": last_name, "email": email})
+            unique_email_student = name_email_count == 0
+            if not unique_email_student:
+                print("We already have a student by that name.  Try again.")
+
+        # Build a new departments document preparatory to storing it
+        student = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email
+        }
+        try:
+            collection.insert_one(student)
+            valid_student = True
+        except Exception as exception:
+            print("We got the following exception from a bad input:")
+            print(exception)
+            print("Please re-enter your values")
+
+
 if __name__ == '__main__':
     password: str = getpass.getpass('Mongo DB password -->')
     username: str = input('Database username [shaunlim] -->')
@@ -206,8 +245,11 @@ if __name__ == '__main__':
     # Print off the collections that we have available to us, again more of a test than anything.
     print(db.list_collection_names())
 
-    # db.create_collection("students")
-    collection = db['students']
+    # Students Collection
+    if 'students' not in db.list_collection_names():
+        db.create_collection('students', check_exists=True)
+
+    students = db['students']
     student_majors = {
         'name': 'CS',
         'declaration_date': '10/30/10'
@@ -238,7 +280,23 @@ if __name__ == '__main__':
         "collMod": "students",
         "validator": students_validator
     })
-    collection.insert_one(student)
+    # students.insert_one(student)
+
+    # Majors Collection
+    if 'majors' not in db.list_collection_names():
+        db.create_collection('majors', check_exists=True)
+
+    major = {
+        'name': 'Biology',
+        'department_abbreviation': 'CECS'
+    }
+
+    majors = db['majors']
+    db.command({
+        "collMod": "majors",
+        "validator": majors_validator
+    })
+    # majors.insert_one(major)
 
     departments = db["departments"]
     """Department Uniqueness Constraints"""
@@ -248,8 +306,7 @@ if __name__ == '__main__':
                              unique=True, name="departments_buildings_and_offices")
     departments.create_index([('name', pymongo.ASCENDING)], unique=True, name="departments_names")
 
-
-    #main menu running
+    # main menu running
     main_action: str = ''
     while main_action != menu_main.last_action():
         main_action = menu_main.menu_prompt()

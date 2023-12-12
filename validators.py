@@ -7,7 +7,7 @@ students_validator = {
             'first_name': {'bsonType': 'string'},
             'email': {'bsonType': 'string'},
             'enrollments': {
-                'bsonType': 'object',
+                'bsonType': 'array',
                 'items': {
                     'bsonType': 'object',
                     'required': ['type', 'section_details'],
@@ -49,9 +49,9 @@ students_validator = {
                 }
             },
             'student_majors': {
-                'bsonType': 'object',
+                'bsonType': 'array',
                 'items': {
-                    'bsonType': 'array',
+                    'bsonType': 'object',
                     'required': ['major_name', 'declaration_date'],
                     'properties': {
                         'major_name': {'bsonType': 'string'},

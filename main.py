@@ -189,6 +189,74 @@ def list_department(db):
         pprint(department)
 
 
+#-----------------------------ENROLLMENT FUNCTIONS--------------------------------
+
+def add_enrollment(db):
+
+    #access the collection where enrollment object resides
+    collection = db['students']
+
+    #gather student information
+    first_name: str = input("Student first name: ")
+    last_name: str = input("Student last name: ")
+    email: str = input("Student email: ")
+
+    #gather the section's information of which the student will be enrolled in
+    department_abbreviation = input("(string) Department abbreviation: ")
+    course_number = input("(int) Course number: ")
+    section_number = input("(int) Section number: ")
+    semester = input("(string) Semester: ")
+    section_year = input("(int) Section Year: ")
+
+    #after getting input, insert into the sections detail object
+    section_details = {
+        "department_abbreviation": department_abbreviation,
+        "course_number": course_number,
+        "section_number": section_number,
+        "semester": semester,
+        "section_year": section_year
+    }
+
+
+    #gather some information about enrollment
+    enrollment_type = input("(string) Choose an enrollment type (letter_grade / pass_fail): ")
+    enrollments = {
+        "type": enrollment_type,
+        "section_details": section_details
+
+    }
+
+    #specify additional information based on selected enrollment type
+    #if letter_grade type, then add  a min_satisfactory letter grade
+    #if pass_fail type, then add an application date for the enrollment
+    if enrollment_type == "letter_grade":
+        letter_grade = input("Specify the minimum letter grade to pass (A/B/C): ")
+        enrollments["letter_grade"] ={"min_satisfactory": letter_grade}
+    elif enrollment_type == "pass_fail":
+        application_date = input("Specify the Pass/Fail appilcation date (DD-MM-YYYY): ")
+        enrollments["pass_fail"] ={"application_date": application_date}
+
+    #now that we have our objects, we need to find the student we are adding the enrollment to
+    #use the information gathered about the student in the beginning
+    #then update the existing student record by adding an enrollment.
+    try:
+        update_result = collection.update_one(
+            #does the updating to the enrollment object within students object
+            {"first_name": first_name, "last_name": last_name, "email": email},
+            {"$push": {"enrollments": enrollments}}
+        )
+        if update_result.matched_count == 0: #if student object is found, then this should = 1
+            print("No matching student found. Check student details entered")
+        elif update_result.modified_count == 0: #if changes were made/added, then this should = 1, if 0 then something went wrong  due to duplicates.
+            print("Enrollment data was not added. Duplicate information error")
+        else:
+            print("Enrollment was added successfully")
+    except Exception as exception:
+        print("Error adding enrollment")
+        print(exception)
+
+
+
 def add_student(db):
     valid_student = False
     collection = db["students"]
@@ -278,7 +346,7 @@ if __name__ == '__main__':
 
     students = db['students']
     student_majors = {
-        'name': 'CS',
+        'major_name': 'CS',
         'declaration_date': '10/30/10'
     }
 
@@ -293,21 +361,22 @@ if __name__ == '__main__':
     enrollment = {
         'type': 'letter_grade',
         'section_details': section_details,
+        'letter_grade': {'min_satisfactory': 'B'}
     }
 
     student = {
         'first_name': "Jane",
         'last_name': "Smith",
         'email': "email@mail.com",
-        'enrollments': enrollment,
-        'student_majors': student_majors
+        'enrollments': [enrollment],
+        'student_majors': [student_majors]
     }
-
+    # db.create_collection('students', students_validator)
     db.command({
         "collMod": "students",
         "validator": students_validator
     })
-    # students.insert_one(student)
+    students.insert_one(student)
 
     # Majors Collection
     if 'majors' not in db.list_collection_names():
@@ -323,7 +392,7 @@ if __name__ == '__main__':
         "collMod": "majors",
         "validator": majors_validator
     })
-    # majors.insert_one(major)
+    majors.insert_one(major)
 
     departments = db["departments"]
     """Department Uniqueness Constraints"""

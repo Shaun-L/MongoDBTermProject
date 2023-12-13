@@ -195,13 +195,24 @@ def add_section(db):
 
     # access the sections collection:
 
+    collection_departments = db["departments"]
+    collection_course = db["courses"]
+
     collection = db["sections"]
     valid_section = False
 
     while not valid_section:
 
         department_abbreviation = input("Department abbreviation: ")
+        department = collection_departments.find_one({"abbreviation": department_abbreviation})
+        if not department:
+            print(f"Department with abbreviation {department_abbreviation} does not exist. Try again.")
+            continue
         course_number = int(input("Course Number: "))
+        course = collection_course.find_one({"course_number": course_number})
+        if not course:
+            print(f"Course in {department_abbreviation} with number {course_number} does not exist.")
+            continue
         section_number = int(input("Section Number: "))
         semester = input("Semester: ")
         section_year = int(input("Section year: "))
@@ -374,8 +385,20 @@ def add_enrollment(db):
         print("Error adding enrollment. Make sure that you enter either A, B, or C for a minimum letter grade to pass")
         print(exception)
 
+def list_section_student(db):
+    collection = db['students']
+    section = select_section(db)
 
-def list_enrollment(db):
+    refs = section["student_references"]
+    if not len(refs):
+        print("This section has no students.")
+    else:
+        for id in refs:
+            student = collection.find_one({"_id": int(id)})
+            pprint(student)
+
+
+def list_student_section(db):
     collection = db['students']
 
     first_name: str = ''

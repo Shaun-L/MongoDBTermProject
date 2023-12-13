@@ -410,6 +410,7 @@ def add_enrollment(db):
         print("Error adding enrollment. Make sure that you enter either A, B, or C for a minimum letter grade to pass")
         print(exception)
 
+
 def list_section_student(db):
     collection = db['students']
     section = select_section(db)
@@ -726,7 +727,6 @@ def add_major(db):
             if not department_exists:
                 print("Department does not exist. Please enter a valid department abbreviation.")
 
-
         major = {
             "name": name,
             "department_abbreviation": department_abbreviation
@@ -764,47 +764,44 @@ def add_course(db):
     collection_courses = db["courses"]
     collection_departments = db["departments"]
 
-    valid_course = False
-    while not valid_course:
-        try:
-            department_abbreviation = input("Department abbreviation: ")
+    try:
+        department_abbreviation = input("Department abbreviation: ")
 
-            # Check if the department exists
-            department = collection_departments.find_one({"abbreviation": department_abbreviation})
-            if not department:
-                print(f"Department with abbreviation {department_abbreviation} does not exist. Try again.")
-                return
+        # Check if the department exists
+        department = collection_departments.find_one({"abbreviation": department_abbreviation})
+        if not department:
+            print(f"Department with abbreviation {department_abbreviation} does not exist. Try again.")
+            return
 
-            course_number = int(input("Course number: "))
-            name = input("Course name: ")
-            description = input("Course description: ")
-            units = int(input("Course units: "))
+        course_number = int(input("Course number: "))
+        name = input("Course name: ")
+        description = input("Course description: ")
+        units = int(input("Course units: "))
 
-            # Check for existing course
+        # Check for existing course
+
+        # Create course
+        course = {
+            "department_abbreviation": department_abbreviation,
+            "course_number": course_number,
+            "name": name,
+            "description": description,
+            "units": units
+        }
+
+        # Insert course
+        collection_courses.insert_one(course)
+
+        print("Course added successfully!")
 
 
-            # Create course
-            course = {
-                "department_abbreviation": department_abbreviation,
-                "course_number": course_number,
-                "name": name,
-                "description": description,
-                "units": units
-            }
+    except ValueError as ve:
+        print(f"Error: {ve}")
+        print("Invalid input. Please enter valid values.")
 
-            # Insert course
-            collection_courses.insert_one(course)
-
-            print("Course added successfully!")
-            valid_course = True
-
-        except ValueError as ve:
-            print(f"Error: {ve}")
-            print("Invalid input. Please enter valid values.")
-
-        except Exception as e:
-            print(f"Error: {e}")
-            print("An unexpected error occurred. Please try again.")
+    except Exception as e:
+        print(f"Error: {e}")
+        print("An unexpected error occurred. Please try again.")
 
 
 def select_course(db):

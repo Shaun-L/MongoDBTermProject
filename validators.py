@@ -128,7 +128,6 @@ sections_validator = {
 }
 
 courses_validator = {
-    'validator': {
         '$jsonSchema': {
             'bsonType': 'object',
             'required': ['department_abbreviation', 'course_number', 'name', 'description', 'units'],
@@ -160,7 +159,7 @@ courses_validator = {
                 }
             }
         }
-    }
+
 }
 
 majors_validator = {
@@ -183,7 +182,6 @@ majors_validator = {
 }
 
 departments_validator = {
-    'validator': {
         '$jsonSchema': {
             'bsonType': 'object',
             'description': 'the basic administrative unit within the University organized to carry on and develop'
@@ -225,5 +223,4 @@ departments_validator = {
                 },
             }
         }
-    }
 }

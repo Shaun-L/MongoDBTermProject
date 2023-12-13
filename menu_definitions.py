@@ -23,6 +23,7 @@ menu_main = Menu('main', 'Please select one of the following options:', [
 
 add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Department", "add_department(db)"),
+    Option("Major", "add_major(db)"),
     Option("Course", "add_course(db)"),
     #    Option("Major", "add_major(db)"),
     Option("Section", "add_section(db)"),

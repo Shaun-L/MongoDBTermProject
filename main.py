@@ -728,7 +728,6 @@ def add_major(db):
 
         department_abbreviation = input("Department abbreviation--> ")
 
-
         # Check if the department exists
         department_exists = departments_collection.count_documents({'abbreviation': department_abbreviation}) > 0
 
@@ -974,7 +973,6 @@ if __name__ == '__main__':
         "validator": students_validator
     })
 
-
     # Majors Collection
     if 'majors' not in db.list_collection_names():
         db.create_collection('majors', check_exists=True)
@@ -991,6 +989,18 @@ if __name__ == '__main__':
     if 'sections' not in db.list_collection_names():
         db.create_collection('sections', check_exists=True)
     sections = db["sections"]
+    sections.create_index(
+        [('course_number', pymongo.ASCENDING), ('section_number', pymongo.ASCENDING), ('semester', pymongo.ASCENDING),
+         ('section_year', pymongo.ASCENDING)],
+        unique=True, name="courseNumber_sectionNumber_semester_sectionYear")
+    sections.create_index(
+        [('building', pymongo.ASCENDING), ('room', pymongo.ASCENDING), ('semester', pymongo.ASCENDING),
+         ('section_year', pymongo.ASCENDING), ('schedule', pymongo.ASCENDING), ("start_time", pymongo.ASCENDING)],
+        unique=True, name="building_room_semester_sectionYear_starTime_schedule")
+    sections.create_index(
+        [('instructor', pymongo.ASCENDING), ('semester', pymongo.ASCENDING),
+         ('section_year', pymongo.ASCENDING), ('schedule', pymongo.ASCENDING), ("start_time", pymongo.ASCENDING)],
+        unique=True, name="instructor_semester_sectionYear_starTime_schedule")
     db.command({
         "collMod": "sections",
         "validator": sections_validator
@@ -999,6 +1009,11 @@ if __name__ == '__main__':
     # Courses Collection
     if 'courses' not in db.list_collection_names():
         db.create_collection('courses', check_exists=True)
+    courses = db["courses"]
+    courses.create_index([('department_abbreviation', pymongo.ASCENDING), ('course_number', pymongo.ASCENDING)],
+                         unique=True, name="departmentAbbreviation_courseNumber")
+    courses.create_index([('department_abbreviation', pymongo.ASCENDING), ('name', pymongo.ASCENDING)],
+                         unique=True, name="departmentAbbreviation_courseName")
     db.command({
         "collMod": "courses",
         "validator": courses_validator

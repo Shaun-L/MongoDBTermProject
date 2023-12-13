@@ -708,30 +708,40 @@ def delete_student(db):
 
 def add_major(db):
     valid_major = False
-    collection = db["majors"]
+    majors_collection = db["majors"]
+    departments_collection = db["departments"]
+
     while not valid_major:
-        unique_major: bool = False
+        unique_major = False
+        name = ''
+        department_abbreviation = ''
 
-        name: str = ''
-        department_abbreviation: str = ''
-
+        # Ask for the department abbreviation and check if it exists
         while not unique_major:
-            name = input("Major name--> ")
             department_abbreviation = input("Department abbreviation--> ")
 
-            # Check if the major already exists
-            major_count: int = collection.count_documents(
-                {"name": name, "department_abbreviation": department_abbreviation})
-            unique_major = major_count == 0
-            if not unique_major:
-                print("We already have a major by that name and department abbreviation.  Try again.")
+            # Check if the department exists
+            department_exists = departments_collection.count_documents({'abbreviation': department_abbreviation}) > 0
+
+            if not department_exists:
+                print("Department does not exist. Please enter a valid department abbreviation.")
+            else:
+                # Check if the major already exists
+                name = input("Major name--> ")
+                major_count = majors_collection.count_documents(
+                    {"name": name, "department_abbreviation": department_abbreviation})
+                unique_major = major_count == 0
+
+                if not unique_major:
+                    print("We already have a major by that name and department abbreviation. Try again.")
 
         major = {
             "name": name,
             "department_abbreviation": department_abbreviation
         }
+
         try:
-            collection.insert_one(major)
+            majors_collection.insert_one(major)
             valid_major = True
         except Exception as exception:
             print("We got the following exception from a bad input:")

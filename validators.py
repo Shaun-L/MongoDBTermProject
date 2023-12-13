@@ -68,7 +68,8 @@ students_validator = {
 sections_validator = {
     '$jsonSchema': {
         'bsonType': 'object',
-        'required': ['department_abbreviation', 'course_number', 'section_number', 'semester', 'section_year', 'building', 'room', 'schedule', 'start_time',
+        'required': ['department_abbreviation', 'course_number', 'section_number', 'semester', 'section_year',
+                     'building', 'room', 'schedule', 'start_time',
                      'instructor', 'student_references'],
         'properties': {
             "_id": {},
@@ -127,7 +128,7 @@ sections_validator = {
 }
 
 courses_validator = {
-        '$jsonSchema': {
+    '$jsonSchema': {
         'bsonType': 'object',
         'required': ['department_abbreviation', 'course_number', 'name', 'description', 'units'],
         'properties': {
@@ -179,7 +180,7 @@ majors_validator = {
 }
 
 departments_validator = {
-        '$jsonSchema': {
+    '$jsonSchema': {
         'bsonType': 'object',
         'description': 'the basic administrative unit within the University organized to carry on and develop'
                        ' the instructional and research activities of its faculty.',

@@ -399,6 +399,88 @@ def delete_student(db):
     deleted = students.delete_one({"_id": student["_id"]})
     print(f"We just deleted: {deleted.deleted_count} departments.")
 
+def add_major(db):
+
+    valid_major = False
+    collection = db["majors"]
+    while not valid_major:
+        unique_major: bool = False
+
+        name: str = ''
+        department_abbreviation: str = ''
+
+        while not unique_major:
+            name = input("Major name--> ")
+            department_abbreviation = input("Department abbreviation--> ")
+
+            # Check if the major already exists
+            major_count: int = collection.count_documents(
+                {"name": name, "department_abbreviation": department_abbreviation})
+            unique_major = major_count == 0
+            if not unique_major:
+                print("We already have a major by that name and department abbreviation.  Try again.")
+
+        major = {
+            "name": name,
+            "department_abbreviation": department_abbreviation
+        }
+        try:
+            collection.insert_one(major)
+            valid_major = True
+        except Exception as exception:
+            print("We got the following exception from a bad input:")
+            print(exception)
+            print("Please re-enter your values")
+
+
+def select_major(db):
+    collection = db["majors"]
+    found = False
+    department_abbreviation = ''
+    major_name = ''
+
+    while not found:
+        department_abbreviation = input("Department abbreviation --> ")
+        major_name = input("Major name --> ")
+
+        count = collection.count_documents({"department_abbreviation": department_abbreviation, "name": major_name})
+        found = count == 1
+        if not found:
+            print(f"No major found with the department abbreviation '{department_abbreviation}' and name '{major_name}'. Try again.")
+
+    found_major = collection.find_one({"department_abbreviation": department_abbreviation, "name": major_name})
+    return found_major
+
+# Add this function to your main menu loop where needed
+# For example:
+# if main_action == 'select_major':
+#     selected_major = select_major(db)
+#     print(selected_major)  # Modify as needed for your application
+
+
+
+def delete_major(db):
+    # Use the select_major function to choose the major to delete
+    selected_major = select_major(db)
+
+    if selected_major:
+        collection = db["majors"]
+        deleted = collection.delete_one({"_id": selected_major["_id"]})
+        print(f"We just deleted: {deleted.deleted_count} major.")
+    else:
+        print("No major found.")
+
+def list_major(db):
+
+    collection = db["majors"]
+
+    majors = collection.find({})
+
+    for major in majors:
+        pprint(major)
+
+
+
 
 if __name__ == '__main__':
     password: str = getpass.getpass('Mongo DB password -->')

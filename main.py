@@ -189,7 +189,90 @@ def list_department(db):
     for department in departments:
         pprint(department)
 
+def add_section(db):
+    #Notes: add students to student_refs in enrollment, address cascading deletions
 
+
+    #access the sections collection:
+
+    collection = db["sections"]
+    valid_section = False
+
+    while not valid_section:
+
+        department_abbreviation = input("Department abbreviation: ")
+        course_number = int(input("Course Number: "))
+        section_number = int(input("Section Number: "))
+        semester = input("Semester: ")
+        section_year = int(input("Section year: "))
+        building = input("Building name: ")
+        room = int(input("Room number: "))
+        schedule = input("Schedule(Days): ")
+        start_time = input("Start time: ")
+        instructor = input("Instructor name: ")
+
+        section = {
+            "department_abbreviation": department_abbreviation,
+            "course_number": course_number,
+            "section_number": section_number,
+            'semester': semester,
+            'section_year': section_year,
+            'building': building,
+            'room': room,
+            'schedule': schedule,
+            'start_time': start_time,
+            'instructor': instructor,
+            'student_references': [],
+        }
+
+        try:
+            collection.insert_one(section)
+            valid_section = True
+        except Exception as exception:
+            print("We got the following exception from a bad input:")
+            print(exception)
+            print("Please re-enter your values")
+
+def select_section(db):
+
+    collection = db["sections"]
+    found = False
+    abbr = ''
+    c_num = ''
+    s_num = ''
+    semester = ''
+    year = ''
+    while not found:
+        abbr = input("Department abbreviation: ")
+        c_num = int(input("Course Number: "))
+        s_num = int(input("Section Number: "))
+        semester = input("Semester: ")
+        year = int(input("Section year: "))
+        count = collection.count_documents({"department_abbreviation": abbr, "course_number": c_num, "section_number": s_num,
+                                            "semester": semester, "section_year": year})
+        found = count == 1
+        if not found:
+            print("No section found with the given attributes. Try again.")
+    found_section = collection.find_one({"department_abbreviation": abbr, "course_number": c_num, "section_number": s_num,
+                                         "semester": semester, "section_year": year})
+    return found_section
+
+
+def delete_section(db):
+
+    section = select_section(db)
+    collection = db["sections"]
+    deleted = collection.delete_one({"_id": section["_id"]})
+    print(f"We just deleted: {deleted.deleted_count} sections.")
+
+def list_section(db):
+    sections = db["sections"].find({}).sort([("department_abbreviation", pymongo.ASCENDING),
+                                             ("course_number", pymongo.ASCENDING),
+                                             ("section_number", pymongo.ASCENDING),
+                                             ("semester", pymongo.ASCENDING),
+                                             ("section_year", pymongo.ASCENDING)])
+    for section in sections:
+        pprint(section)
 
 
 def add_enrollment(db):
@@ -648,6 +731,9 @@ def list_major(db):
         pprint(major)
 
 
+def boilerplate(db):
+    # TODO: Make this to test easier
+    pass
 
 
 if __name__ == '__main__':

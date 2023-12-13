@@ -155,21 +155,46 @@ def select_department(db):
 
 def delete_department(db):
     """
-    Delete a student from the database.
-    :param db:  The current database connection.
-    :return:    None
+    Delete a department from the database.
+    :param db: The current database connection.
+    :return: None
     """
-    # student isn't a Student object (we have no such thing in this application)
-    # rather it's a dict with all the content of the selected student, including
-    # the MongoDB-supplied _id column which is a built-in surrogate.
-    department = select_department(db)
-    # Create a "pointer" to the students collection within the db database.
-    departments = db["departments"]
-    # student["_id"] returns the _id value from the selected student document.
-    deleted = departments.delete_one({"_id": department["_id"]})
-    # The deleted variable is a document that tells us, among other things, how
-    # many documents we deleted.
-    print(f"We just deleted: {deleted.deleted_count} departments.")
+    # Ask the user for the department abbreviation
+    department_abbreviation = input("Enter the department abbreviation: ")
+
+    # Create a "pointer" to the courses collection within the db database
+    courses = db["courses"]
+
+    # Check if there are any courses in the department
+    existing_courses = courses.find({'department_abbreviation': department_abbreviation})
+
+    # Using count_documents to get the count
+    courses_count = courses.count_documents({'department_abbreviation': department_abbreviation})
+
+    if courses_count > 0:
+        print("Cannot delete the department. There are existing courses in this department.")
+    else:
+        # Create a "pointer" to the majors collection within the db database
+        majors = db["majors"]
+
+        # Check if there are any majors in the department
+        existing_majors = majors.find({'department_abbreviation': department_abbreviation})
+
+        # Using count_documents to get the count
+        majors_count = majors.count_documents({'department_abbreviation': department_abbreviation})
+
+        if majors_count > 0:
+            print("Cannot delete the department. There are existing majors in this department.")
+        else:
+            # Create a "pointer" to the departments collection within the db database
+            departments = db["departments"]
+
+            # Delete the department if no courses or majors are found
+            deleted = departments.delete_one({'abbreviation': department_abbreviation})
+
+            # The deleted variable is a document that tells us, among other things, how
+            # many documents we deleted.
+            print(f"We just deleted: {deleted.deleted_count} departments.")
 
 
 def list_department(db):
@@ -658,7 +683,6 @@ def delete_student(db):
     print(f"We just deleted: {deleted.deleted_count} student(s).")
 
 
-
 def add_major(db):
     valid_major = False
     collection = db["majors"]
@@ -939,10 +963,10 @@ if __name__ == '__main__':
     sections = db["sections"]
 
     # Courses Collection
-    if 'course' not in db.list_collection_names():
-        db.create_collection('course', check_exists=True)
+    if 'courses' not in db.list_collection_names():
+        db.create_collection('courses', check_exists=True)
     db.command({
-        "collMod": "course",
+        "collMod": "courses",
         "validator": courses_validator
     })
 

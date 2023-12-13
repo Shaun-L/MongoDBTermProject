@@ -725,15 +725,7 @@ def add_major(db):
 
             if not department_exists:
                 print("Department does not exist. Please enter a valid department abbreviation.")
-            else:
-                # Check if the major already exists
-                name = input("Major name--> ")
-                major_count = majors_collection.count_documents(
-                    {"name": name, "department_abbreviation": department_abbreviation})
-                unique_major = major_count == 0
 
-                if not unique_major:
-                    print("We already have a major by that name and department abbreviation. Try again.")
 
         major = {
             "name": name,
@@ -789,12 +781,7 @@ def add_course(db):
             units = int(input("Course units: "))
 
             # Check for existing course
-            existing_course = collection_courses.find_one(
-                {"department_abbreviation": department_abbreviation, "course_number": course_number}
-            )
-            if existing_course:
-                print("Course with the same department abbreviation and course number already exists. Try again.")
-                return
+
 
             # Create course
             course = {

@@ -189,11 +189,11 @@ def list_department(db):
     for department in departments:
         pprint(department)
 
+
 def add_section(db):
-    #Notes: add students to student_refs in enrollment, address cascading deletions
+    # Notes: add students to student_refs in enrollment, address cascading deletions
 
-
-    #access the sections collection:
+    # access the sections collection:
 
     collection = db["sections"]
     valid_section = False
@@ -233,8 +233,8 @@ def add_section(db):
             print(exception)
             print("Please re-enter your values")
 
-def select_section(db):
 
+def select_section(db):
     collection = db["sections"]
     found = False
     abbr = ''
@@ -248,22 +248,24 @@ def select_section(db):
         s_num = int(input("Section Number: "))
         semester = input("Semester: ")
         year = int(input("Section year: "))
-        count = collection.count_documents({"department_abbreviation": abbr, "course_number": c_num, "section_number": s_num,
-                                            "semester": semester, "section_year": year})
+        count = collection.count_documents(
+            {"department_abbreviation": abbr, "course_number": c_num, "section_number": s_num,
+             "semester": semester, "section_year": year})
         found = count == 1
         if not found:
             print("No section found with the given attributes. Try again.")
-    found_section = collection.find_one({"department_abbreviation": abbr, "course_number": c_num, "section_number": s_num,
-                                         "semester": semester, "section_year": year})
+    found_section = collection.find_one(
+        {"department_abbreviation": abbr, "course_number": c_num, "section_number": s_num,
+         "semester": semester, "section_year": year})
     return found_section
 
 
 def delete_section(db):
-
     section = select_section(db)
     collection = db["sections"]
     deleted = collection.delete_one({"_id": section["_id"]})
     print(f"We just deleted: {deleted.deleted_count} sections.")
+
 
 def list_section(db):
     sections = db["sections"].find({}).sort([("department_abbreviation", pymongo.ASCENDING),
@@ -276,11 +278,11 @@ def list_section(db):
 
 
 def add_enrollment(db):
-    #access the collection where enrollment object resides
+    # access the collection where enrollment object resides
     collection = db['students']
-    #sections_collection = db['sections']
+    # sections_collection = db['sections']
 
-    #gather student information
+    # gather student information
     first_name = input("Student first name: ")
     last_name = input("Student last name: ")
     email = input("Student email: ")
@@ -291,7 +293,7 @@ def add_enrollment(db):
         print("No matching student found. Check student details entered")
         return
 
-    #gather the section's information of which the student will be enrolled in
+    # gather the section's information of which the student will be enrolled in
     department_abbreviation = input("(string) Department abbreviation: ")
     course_number = int(input("(int) Course number: "))  # Convert to integer
     section_number = int(input("(int) Section number: "))  # Convert to integer
@@ -311,8 +313,7 @@ def add_enrollment(db):
     #     print("No matching section found. Check section details entered.")
     #     return
 
-
-    #after getting input, insert into the sections detail object
+    # after getting input, insert into the sections detail object
     section_details = {
         "department_abbreviation": department_abbreviation,
         "course_number": course_number,
@@ -327,26 +328,28 @@ def add_enrollment(db):
                 enrollment.get("section_details", {}).get("course_number") == course_number and
                 enrollment.get("section_details", {}).get("semester") == semester and
                 enrollment.get("section_details", {}).get("section_year") == section_year):
-            print("Student is already enrolled in this course for the specified semester and year. Can't enroll in two sections of the same course")
+            print(
+                "Student is already enrolled in this course for the specified semester and year. Can't enroll in two sections of the same course")
             return
 
-    #gather some information about enrollment
+    # gather some information about enrollment
     enrollment_type = input("(string) Choose an enrollment type (letter_grade / pass_fail): ")
     enrollments = {
         "type": enrollment_type,
         "section_details": section_details
 
     }
-    #specify additional information based on selected enrollment type
-    #if letter_grade type, then add  a min_satisfactory letter grade
-    #if pass_fail type, then add an application date for the enrollment
+    # specify additional information based on selected enrollment type
+    # if letter_grade type, then add  a min_satisfactory letter grade
+    # if pass_fail type, then add an application date for the enrollment
     if enrollment_type == "letter_grade":
         letter_grade = input("Specify the minimum letter grade to pass (A/B/C): ")
-        enrollments["letter_grade"] ={"min_satisfactory": letter_grade}
+        enrollments["letter_grade"] = {"min_satisfactory": letter_grade}
     elif enrollment_type == "pass_fail":
-        application_date_str = input("Specify the Pass/Fail appilcation date. Must be on or before today's date. (YYYY-MM-DD): ")
+        application_date_str = input(
+            "Specify the Pass/Fail appilcation date. Must be on or before today's date. (YYYY-MM-DD): ")
 
-        #TO CHECK FOR DATE FORMAT & DATE <= TODAY
+        # TO CHECK FOR DATE FORMAT & DATE <= TODAY
         try:
             application_date = datetime.strptime(application_date_str, '%Y-%m-%d').date()
         except ValueError:
@@ -358,20 +361,20 @@ def add_enrollment(db):
             print("Application date must be on or before today's date.")
             return
 
-        enrollments["pass_fail"] ={"application_date": application_date_str}
+        enrollments["pass_fail"] = {"application_date": application_date_str}
 
-    #now that we have our objects, we need to find the student we are adding the enrollment to
-    #use the information gathered about the student in the beginning
-    #then update the existing student record by adding an enrollment.
+    # now that we have our objects, we need to find the student we are adding the enrollment to
+    # use the information gathered about the student in the beginning
+    # then update the existing student record by adding an enrollment.
     try:
         update_result = collection.update_one(
-            #does the updating to the enrollment object within students object
+            # does the updating to the enrollment object within students object
             {"first_name": first_name, "last_name": last_name, "email": email},
             {"$push": {"enrollments": enrollments}}
         )
-        if update_result.matched_count == 0: #if student object is found, then this should = 1
+        if update_result.matched_count == 0:  # if student object is found, then this should = 1
             print("No matching student found. Check student details entered")
-        elif update_result.modified_count == 0: #if changes were made/added, then this should = 1, if 0 then something went wrong  due to duplicates.
+        elif update_result.modified_count == 0:  # if changes were made/added, then this should = 1, if 0 then something went wrong  due to duplicates.
             print("Enrollment data was not added. Duplicate information error")
         else:
             print("Enrollment was added successfully")
@@ -387,19 +390,18 @@ def list_enrollment(db):
     last_name: str = ''
     email: str = ''
 
-
-    #gather some information about the student
+    # gather some information about the student
     print("Give student details to list their enrollments")
     first_name = input("Student's first name: ")
     last_name = input("Student's last name: ")
     email = input("Student's email: ")
 
-    #Find student in the collection
+    # Find student in the collection
     student = collection.find_one(
         {"first_name": first_name, "last_name": last_name, "email": email}
     )
 
-    #Now check if the student was found
+    # Now check if the student was found
     if student:
         print(f"\nListing enrollments for {first_name}  {last_name} ({email}):")
         enrollments = student.get('enrollments', [])
@@ -417,20 +419,19 @@ def list_enrollment(db):
 def delete_enrollment(db):
     collection = db['students']
 
-    #get some infomration about the student
+    # get some infomration about the student
     first_name = input("Student's first name: ")
     last_name = input("Student's last name: ")
     email = input("Student's email: ")
 
-
-    #get some info about the section to identify the enrollment to delete
+    # get some info about the section to identify the enrollment to delete
     department_abbreviation = input("(string) Department abbreviation: ")
     course_number = int(input("(int) Course number: "))  # Convert to integer
     section_number = int(input("(int) Section number: "))  # Convert to integer
     semester = input("(string) Semester: ")
     section_year = int(input("(int) Section Year: "))  # Convert to integer
 
-    #create the section details object to find
+    # create the section details object to find
     section_details = {
         "department_abbreviation": department_abbreviation,
         "course_number": course_number,
@@ -439,18 +440,17 @@ def delete_enrollment(db):
         "section_year": section_year
     }
 
-
-    #find student and delete specific enrollment
+    # find student and delete specific enrollment
     try:
         update_result = collection.update_one(
             {"first_name": first_name, "last_name": last_name, "email": email},
             {"$pull": {"enrollments": {"section_details": section_details}}}
         )
-        if update_result.matched_count == 0: #check if student found
+        if update_result.matched_count == 0:  # check if student found
             print("No matching student found. Check the entered student details")
-        elif update_result.modified_count == 0: #check for enrollment (pulled out nothing)
+        elif update_result.modified_count == 0:  # check for enrollment (pulled out nothing)
             print("Enrollment data was not found or not removed.")
-        else:   #success
+        else:  # success
             print("Enrollment was deleted successfully.")
     except Exception as exception:
         print("Error deleting enrollment")
@@ -458,19 +458,19 @@ def delete_enrollment(db):
 
 
 def add_student_major(db):
-    #get to the collection
+    # get to the collection
     collection = db['students']
 
-    #gather some information about the student
+    # gather some information about the student
     first_name = input("Enter first name: ")
     last_name = input("Enter last name: ")
     email = input("Enter email: ")
 
-    #gather details about the major we are adding to the student
+    # gather details about the major we are adding to the student
     major_name = input("Enter major name: ")
     declaration_date_str = input("Enter declaration date of the major (YYYY-MM-DD): ")
 
-    #make sure date is <= today AND in correct format
+    # make sure date is <= today AND in correct format
     try:
         declaration_date = datetime.strptime(declaration_date_str, '%Y-%m-%d').date()
         if declaration_date > datetime.today().date():
@@ -480,27 +480,27 @@ def add_student_major(db):
         print("Invalid date format. Please use YYYY-MM-DD format.")
         return
 
-    #create the major object now
+    # create the major object now
     major = {
         "major_name": major_name,
         "declaration_date": declaration_date
     }
 
-    #locate student if exists, and then add the major to it
+    # locate student if exists, and then add the major to it
     try:
         student = collection.find_one({"first_name": first_name, "last_name": last_name, "email": email})
 
-        #see if student exists
+        # see if student exists
         if not student:
             print("Student does not exist")
             return
 
-        #if student already enrolled in the major
-        if any(m['major_name'] == major_name for m in student.get('student_majors', [])): #checks for duplicate major
+        # if student already enrolled in the major
+        if any(m['major_name'] == major_name for m in student.get('student_majors', [])):  # checks for duplicate major
             print("This student already is enrolled in that major.")
             return
 
-        #add the major to the student
+        # add the major to the student
         update_result = collection.update_one(
             {"first_name": first_name, "last_name": last_name, "email": email},
             {"$push": {"student_majors": major}}
@@ -517,17 +517,17 @@ def add_student_major(db):
 def list_student_major(db):
     collection = db['students']
 
-    #gather some information about the student
+    # gather some information about the student
     first_name = input("Enter first name: ")
     last_name = input("Enter last name: ")
     email = input("Enter email: ")
 
-    #find the student in the database if they exist
+    # find the student in the database if they exist
     student = collection.find_one(
         {"first_name": first_name, "last_name": last_name, "email": email}
     )
 
-    #check if a student was found
+    # check if a student was found
     if student:
         print(f"\nListing majors for {first_name} {last_name} ({email}):")
         student_majors = student.get('student_majors', [])
@@ -545,17 +545,17 @@ def list_student_major(db):
 def delete_student_major(db):
     collection = db['students']
 
-    #gather some information about the student
+    # gather some information about the student
     print("Deleting student major...")
     first_name = input("Enter first name: ")
     last_name = input("Enter last name: ")
     email = input("Enter email: ")
 
-    #gather information about the major we wish to delete from the student
+    # gather information about the major we wish to delete from the student
     major_name = input("Enter major for deletion: ")
 
     try:
-        #make sure student exists first
+        # make sure student exists first
         student = collection.find_one(
             {"first_name": first_name, "last_name": last_name, "email": email}
         )
@@ -650,8 +650,8 @@ def delete_student(db):
     deleted = students.delete_one({"_id": student["_id"]})
     print(f"We just deleted: {deleted.deleted_count} departments.")
 
-def add_major(db):
 
+def add_major(db):
     valid_major = False
     collection = db["majors"]
     while not valid_major:
@@ -697,13 +697,11 @@ def select_major(db):
         count = collection.count_documents({"department_abbreviation": department_abbreviation, "name": major_name})
         found = count == 1
         if not found:
-            print(f"No major found with the department abbreviation '{department_abbreviation}' and name '{major_name}'. Try again.")
+            print(
+                f"No major found with the department abbreviation '{department_abbreviation}' and name '{major_name}'. Try again.")
 
     found_major = collection.find_one({"department_abbreviation": department_abbreviation, "name": major_name})
     return found_major
-
-
-
 
 
 def delete_major(db):
@@ -717,15 +715,14 @@ def delete_major(db):
     else:
         print("No major found.")
 
-def list_major(db):
 
+def list_major(db):
     collection = db["majors"]
 
     majors = collection.find({})
 
     for major in majors:
         pprint(major)
-
 
 
 def add_course(db):
@@ -778,6 +775,8 @@ def add_course(db):
         except Exception as e:
             print(f"Error: {e}")
             print("An unexpected error occurred. Please try again.")
+
+
 def select_course(db):
     # Get the "courses" collection
     courses = db["courses"]
@@ -797,6 +796,7 @@ def select_course(db):
             return course
         else:
             print("No matching course found. Please try again.")
+
 
 def delete_course(db):
     courses = db["courses"]
@@ -828,6 +828,7 @@ def delete_course(db):
             print(f"Course '{department_abbreviation} {course_number}' deleted successfully.")
     else:
         print(f"Course '{department_abbreviation} {course_number}' not found.")
+
 
 def list_course(db):
     # Get the "courses" collection
@@ -880,8 +881,6 @@ if __name__ == '__main__':
         "collMod": "courses",
         "validator": courses_validator
     })
-
-
 
     # Students Collection
     if 'students' not in db.list_collection_names():
@@ -944,8 +943,6 @@ if __name__ == '__main__':
     departments.create_index([('building', pymongo.ASCENDING), ('office', pymongo.ASCENDING)],
                              unique=True, name="departments_buildings_and_offices")
     departments.create_index([('name', pymongo.ASCENDING)], unique=True, name="departments_names")
-
-
 
     # main menu running
     main_action: str = ''

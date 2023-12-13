@@ -702,11 +702,7 @@ def select_major(db):
     found_major = collection.find_one({"department_abbreviation": department_abbreviation, "name": major_name})
     return found_major
 
-# Add this function to your main menu loop where needed
-# For example:
-# if main_action == 'select_major':
-#     selected_major = select_major(db)
-#     print(selected_major)  # Modify as needed for your application
+
 
 
 
@@ -731,6 +727,129 @@ def list_major(db):
         pprint(major)
 
 
+
+def add_course(db):
+    collection_courses = db["courses"]
+    collection_departments = db["departments"]
+
+    valid_course = False
+    while not valid_course:
+        try:
+            department_abbreviation = input("Department abbreviation: ")
+
+            # Check if the department exists
+            department = collection_departments.find_one({"abbreviation": department_abbreviation})
+            if not department:
+                print(f"Department with abbreviation {department_abbreviation} does not exist. Try again.")
+                return
+
+            course_number = int(input("Course number: "))
+            name = input("Course name: ")
+            description = input("Course description: ")
+            units = int(input("Course units: "))
+
+            # Check for existing course
+            existing_course = collection_courses.find_one(
+                {"department_abbreviation": department_abbreviation, "course_number": course_number}
+            )
+            if existing_course:
+                print("Course with the same department abbreviation and course number already exists. Try again.")
+                return
+
+            # Create course
+            course = {
+                "department_abbreviation": department_abbreviation,
+                "course_number": course_number,
+                "name": name,
+                "description": description,
+                "units": units
+            }
+
+            # Insert course
+            collection_courses.insert_one(course)
+
+            print("Course added successfully!")
+            valid_course = True
+
+        except ValueError as ve:
+            print(f"Error: {ve}")
+            print("Invalid input. Please enter valid values.")
+
+        except Exception as e:
+            print(f"Error: {e}")
+            print("An unexpected error occurred. Please try again.")
+def select_course(db):
+    # Get the "courses" collection
+    courses = db["courses"]
+
+    while True:
+        # Gather information about the course
+        department_abbreviation = input("Enter the department abbreviation: ")
+        course_number = int(input("Enter the course number: "))
+
+        # Find the course based on the provided department abbreviation and course number
+        course = courses.find_one({
+            'department_abbreviation': department_abbreviation,
+            'course_number': course_number
+        })
+
+        if course:
+            return course
+        else:
+            print("No matching course found. Please try again.")
+
+def delete_course(db):
+    courses = db["courses"]
+
+    # Ask the user for the department abbreviation and course number
+    department_abbreviation = input("Enter the department abbreviation: ")
+    course_number = input("Enter the course number: ")
+
+    # Check if the course exists
+    existing_course = courses.find_one({
+        'department_abbreviation': department_abbreviation,
+        'course_number': int(course_number)  # Convert to integer
+    })
+
+    if existing_course:
+        sections_count = db["sections"].count_documents({
+            'department_abbreviation': department_abbreviation,
+            'course_number': int(course_number)
+        })
+
+        if sections_count > 0:
+            print("Cannot delete the course. There are existing sections for this course.")
+        else:
+            # Delete the course if no sections are found
+            courses.delete_one({
+                'department_abbreviation': department_abbreviation,
+                'course_number': int(course_number)
+            })
+            print(f"Course '{department_abbreviation} {course_number}' deleted successfully.")
+    else:
+        print(f"Course '{department_abbreviation} {course_number}' not found.")
+
+def list_course(db):
+    # Get the "courses" collection
+    courses = db["courses"]
+
+    # Ask the user for the department abbreviation
+    department_abbreviation = input("Enter the department abbreviation: ")
+
+    # Find and list all courses in the specified department
+    department_courses = courses.find({'department_abbreviation': department_abbreviation})
+
+    # Using count_documents to get the count
+    courses_count = courses.count_documents({'department_abbreviation': department_abbreviation})
+
+    if courses_count == 0:
+        print(f"No courses found for department '{department_abbreviation}'.")
+    else:
+        print(f"Courses in department '{department_abbreviation}':")
+        for course in department_courses:
+            print(f"{course['department_abbreviation']} {course['course_number']}: {course['name']}")
+
+
 def boilerplate(db):
     # TODO: Make this to test easier
     pass
@@ -752,6 +871,17 @@ if __name__ == '__main__':
     db = client["Demonstration"]
     # Print off the collections that we have available to us, again more of a test than anything.
     print(db.list_collection_names())
+
+    # Courses Collection
+    if 'courses' not in db.list_collection_names():
+        db.create_collection('courses', check_exists=True)
+
+    db.command({
+        "collMod": "courses",
+        "validator": courses_validator
+    })
+
+
 
     # Students Collection
     if 'students' not in db.list_collection_names():
@@ -814,6 +944,8 @@ if __name__ == '__main__':
     departments.create_index([('building', pymongo.ASCENDING), ('office', pymongo.ASCENDING)],
                              unique=True, name="departments_buildings_and_offices")
     departments.create_index([('name', pymongo.ASCENDING)], unique=True, name="departments_names")
+
+
 
     # main menu running
     main_action: str = ''

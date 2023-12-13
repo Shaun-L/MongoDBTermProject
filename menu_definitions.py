@@ -52,7 +52,8 @@ list_menu = Menu('list', 'Please indicate what you want to list:', [
     #    Option("Major", "list_major(db)"),
     Option("Section", "list_section(db)"),
     Option("Student", "list_student(db)"),
-    Option("Enrollment", "list_enrollment(db)"),
+    Option("Section to Student", "list_section_student(db)"),
+    Option("Student to Section", "list_student_section(db)"),
     Option("Major(s) of a specific Student", "list_student_major(db)"),
     Option("Major","list_major(db)"),
     Option("Exit", "pass")

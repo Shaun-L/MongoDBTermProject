@@ -658,6 +658,7 @@ def delete_student(db):
     print(f"We just deleted: {deleted.deleted_count} student(s).")
 
 
+
 def add_major(db):
     valid_major = False
     collection = db["majors"]

@@ -718,14 +718,14 @@ def add_major(db):
         department_abbreviation = ''
 
         # Ask for the department abbreviation and check if it exists
-        while not unique_major:
-            department_abbreviation = input("Department abbreviation--> ")
 
-            # Check if the department exists
-            department_exists = departments_collection.count_documents({'abbreviation': department_abbreviation}) > 0
+        department_abbreviation = input("Department abbreviation--> ")
 
-            if not department_exists:
-                print("Department does not exist. Please enter a valid department abbreviation.")
+        # Check if the department exists
+        department_exists = departments_collection.count_documents({'abbreviation': department_abbreviation}) > 0
+
+        if not department_exists:
+            print("Department does not exist. Please enter a valid department abbreviation.")
 
         major = {
             "name": name,

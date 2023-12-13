@@ -799,7 +799,6 @@ def select_course(db):
             print("No matching course found. Please try again.")
 
 def delete_course(db):
-    # Get the "courses" collection
     courses = db["courses"]
 
     # Ask the user for the department abbreviation and course number
@@ -813,16 +812,9 @@ def delete_course(db):
     })
 
     if existing_course:
-        # Check if there are sections for the course
-        existing_sections = db["sections"].find({
-            'department_abbreviation': department_abbreviation,
-            'course_number': int(course_number)  # Convert to integer
-        })
-
-        # Using count_documents to get the count
         sections_count = db["sections"].count_documents({
             'department_abbreviation': department_abbreviation,
-            'course_number': int(course_number)  # Convert to integer
+            'course_number': int(course_number)
         })
 
         if sections_count > 0:
@@ -831,7 +823,7 @@ def delete_course(db):
             # Delete the course if no sections are found
             courses.delete_one({
                 'department_abbreviation': department_abbreviation,
-                'course_number': int(course_number)  # Convert to integer
+                'course_number': int(course_number)
             })
             print(f"Course '{department_abbreviation} {course_number}' deleted successfully.")
     else:

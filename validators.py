@@ -56,7 +56,7 @@ students_validator = {
                     'required': ['major_name', 'declaration_date'],
                     'properties': {
                         'major_name': {'bsonType': 'string'},
-                        # TODO: add constraint - "declrationDate <= today"
+                        # TODO: add constraint - "declarationDate <= today"
                         'declaration_date': {'bsonType': 'string'}  # Assuming declaration_date is a string
                     }
                 }
@@ -69,8 +69,9 @@ students_validator = {
 sections_validator = {
     '$jsonSchema': {
         'bsonType': 'object',
-        'required': ['department_abbreviation', 'course_number', 'section_number', 'semester', 'section_year', 'building', 'room', 'schedule', 'start_time',
-                     'instructor', 'student_references'],
+        'required': ['department_abbreviation', 'course_number', 'section_number', 'semester', 'section_year',
+                     'building', 'room', 'schedule', 'start_time',
+                     'instructor'],
         'properties': {
             "_id": {},
             'department_abbreviation': {
@@ -119,7 +120,7 @@ sections_validator = {
             'student_references': {
                 'bsonType': 'array',
                 'items': {
-                    'bsonType': 'int',
+                    'bsonType': 'objectId',
                     'description': 'must be integers representing student IDs'
                 }
             }
@@ -128,36 +129,34 @@ sections_validator = {
 }
 
 courses_validator = {
-    'validator': {
-        '$jsonSchema': {
-            'bsonType': 'object',
-            'required': ['department_abbreviation', 'course_number', 'name', 'description', 'units'],
-            'properties': {
-                "_id": {},
-                'department_abbreviation': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                },
-                'course_number': {
-                    'bsonType': 'int',
-                    'minimum': 100,
-                    'maximum': 699,
-                    'description': 'must be an integer and is required'
-                },
-                'name': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                },
-                'description': {
-                    'bsonType': 'string',
-                    'description': 'must be a string and is required'
-                },
-                'units': {
-                    'bsonType': 'int',
-                    'minimum': 1,
-                    'maximum': 5,
-                    'description': 'must be an integer and is required'
-                }
+    '$jsonSchema': {
+        'bsonType': 'object',
+        'required': ['department_abbreviation', 'course_number', 'name', 'description', 'units'],
+        'properties': {
+            "_id": {},
+            'department_abbreviation': {
+                'bsonType': 'string',
+                'description': 'must be a string and is required'
+            },
+            'course_number': {
+                'bsonType': 'int',
+                'minimum': 100,
+                'maximum': 699,
+                'description': 'must be an integer and is required'
+            },
+            'name': {
+                'bsonType': 'string',
+                'description': 'must be a string and is required'
+            },
+            'description': {
+                'bsonType': 'string',
+                'description': 'must be a string and is required'
+            },
+            'units': {
+                'bsonType': 'int',
+                'minimum': 1,
+                'maximum': 5,
+                'description': 'must be an integer and is required'
             }
         }
     }
@@ -171,7 +170,6 @@ majors_validator = {
             "_id": {},
             'name': {
                 'bsonType': 'string',
-                'enum': ["Biology", "Computer Science", "Mathematics"],
                 'description': 'must be a string and is required'
             },
             'department_abbreviation': {
@@ -183,47 +181,45 @@ majors_validator = {
 }
 
 departments_validator = {
-    'validator': {
-        '$jsonSchema': {
-            'bsonType': 'object',
-            'description': 'the basic administrative unit within the University organized to carry on and develop'
-                           ' the instructional and research activities of its faculty.',
-            'required': ['abbreviation', 'name', 'chair_name', 'building', 'room', 'description'],
-            'additionalProperties': False,
-            'properties': {
-                '_id': {},
-                'name': {
-                    'bsonType': "string",
-                    'description': "The label that identifies a singular department."
-                },
-                'abbreviation': {
-                    'bsonType': "string",
-                    "minLength": 1,
-                    "maxLength": 6,
-                    'description': "A shortened string that identifies a singular department"
-                },
-                'chair_name': {
-                    'bsonType': "string",
-                    "minLength": 1,
-                    "maxLength": 80,
-                    'description': "The person who is in charge of the department"
-                },
-                'building': {
-                    'enum': ["ANAC", "CDC", "DC", "ECS", "EN2", "EN3", "EN4", "EN5", "ET", "HSCI", "NUR", "VEC"],
-                    'description': "The string name of the structure the head office of the department will be"
-                },
-                'office': {
-                    'bsonType': "int",
-                    'minimum': 1,
-                    'description': "An integer identifying the room the head office of"
-                                   " the department will be"
-                },
-                'description': {
-                    'bsonType': "string",
-                    "maxLength": 80,
-                    'description': "A sentence describing the department"
-                },
-            }
+    '$jsonSchema': {
+        'bsonType': 'object',
+        'description': 'the basic administrative unit within the University organized to carry on and develop'
+                       ' the instructional and research activities of its faculty.',
+        'required': ['abbreviation', 'name', 'chair_name', 'building', 'room', 'description'],
+        'additionalProperties': False,
+        'properties': {
+            '_id': {},
+            'name': {
+                'bsonType': "string",
+                'description': "The label that identifies a singular department."
+            },
+            'abbreviation': {
+                'bsonType': "string",
+                "minLength": 1,
+                "maxLength": 6,
+                'description': "A shortened string that identifies a singular department"
+            },
+            'chair_name': {
+                'bsonType': "string",
+                "minLength": 1,
+                "maxLength": 80,
+                'description': "The person who is in charge of the department"
+            },
+            'building': {
+                'enum': ["ANAC", "CDC", "DC", "ECS", "EN2", "EN3", "EN4", "EN5", "ET", "HSCI", "NUR", "VEC"],
+                'description': "The string name of the structure the head office of the department will be"
+            },
+            'office': {
+                'bsonType': "int",
+                'minimum': 1,
+                'description': "An integer identifying the room the head office of"
+                               " the department will be"
+            },
+            'description': {
+                'bsonType': "string",
+                "maxLength": 80,
+                'description': "A sentence describing the department"
+            },
         }
     }
 }

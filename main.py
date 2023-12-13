@@ -299,6 +299,10 @@ def select_section(db):
 def delete_section(db):
     section = select_section(db)
     collection = db["sections"]
+    if len(section["student_references"]) > 0:
+        print("There are still students enrolled in this section. Delete those enrollments first")
+        return
+
     deleted = collection.delete_one({"_id": section["_id"]})
     print(f"We just deleted: {deleted.deleted_count} sections.")
 
@@ -703,6 +707,9 @@ def select_student(db):
 def delete_student(db):
     student = select_student(db)
     students = db["students"]
+    if len(student["enrollments"]) > 0:
+        print("This student is still enrolled in at least one section. Delete those enrollments first")
+        return
     deleted = students.delete_one({"_id": student["_id"]})
     print(f"We just deleted: {deleted.deleted_count} student(s).")
 

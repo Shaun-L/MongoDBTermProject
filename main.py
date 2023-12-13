@@ -8,6 +8,7 @@ from validators import *
 from menu_definitions import add_menu
 from menu_definitions import delete_menu
 from menu_definitions import list_menu
+from datetime import datetime
 
 
 def add(db):
@@ -192,14 +193,20 @@ def list_department(db):
 
 
 def add_enrollment(db):
-
     #access the collection where enrollment object resides
     collection = db['students']
+    #sections_collection = db['sections']
 
     #gather student information
     first_name = input("Student first name: ")
     last_name = input("Student last name: ")
     email = input("Student email: ")
+
+    # check for existing student
+    student = collection.find_one({"first_name": first_name, "last_name": last_name, "email": email})
+    if not student:
+        print("No matching student found. Check student details entered")
+        return
 
     #gather the section's information of which the student will be enrolled in
     department_abbreviation = input("(string) Department abbreviation: ")
@@ -207,6 +214,20 @@ def add_enrollment(db):
     section_number = int(input("(int) Section number: "))  # Convert to integer
     semester = input("(string) Semester: ")
     section_year = int(input("(int) Section Year: "))  # Convert to integer
+
+    # Check if the section exists
+    # section = sections_collection.find_one({
+    #     "department_abbreviation": department_abbreviation,
+    #     "course_number": course_number,
+    #     "section_number": section_number,
+    #     "semester": semester,
+    #     "section_year": section_year
+    # })
+    #
+    # if not section:
+    #     print("No matching section found. Check section details entered.")
+    #     return
+
 
     #after getting input, insert into the sections detail object
     section_details = {
@@ -217,6 +238,14 @@ def add_enrollment(db):
         "section_year": section_year
     }
 
+    # Check for existing enrollment in the same course and semester
+    for enrollment in student.get("enrollments", []):
+        if (enrollment.get("section_details", {}).get("department_abbreviation") == department_abbreviation and
+                enrollment.get("section_details", {}).get("course_number") == course_number and
+                enrollment.get("section_details", {}).get("semester") == semester and
+                enrollment.get("section_details", {}).get("section_year") == section_year):
+            print("Student is already enrolled in this course for the specified semester and year. Can't enroll in two sections of the same course")
+            return
 
     #gather some information about enrollment
     enrollment_type = input("(string) Choose an enrollment type (letter_grade / pass_fail): ")
@@ -225,7 +254,6 @@ def add_enrollment(db):
         "section_details": section_details
 
     }
-
     #specify additional information based on selected enrollment type
     #if letter_grade type, then add  a min_satisfactory letter grade
     #if pass_fail type, then add an application date for the enrollment
@@ -233,8 +261,21 @@ def add_enrollment(db):
         letter_grade = input("Specify the minimum letter grade to pass (A/B/C): ")
         enrollments["letter_grade"] ={"min_satisfactory": letter_grade}
     elif enrollment_type == "pass_fail":
-        application_date = input("Specify the Pass/Fail appilcation date (DD-MM-YYYY): ")
-        enrollments["pass_fail"] ={"application_date": application_date}
+        application_date_str = input("Specify the Pass/Fail appilcation date. Must be on or before today's date. (YYYY-MM-DD): ")
+
+        #TO CHECK FOR DATE FORMAT & DATE <= TODAY
+        try:
+            application_date = datetime.strptime(application_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            print("Invalid date format. Please use YYYY-MM-DD format.")
+            return
+
+            # Check if the application date is on or before today's date
+        if application_date > datetime.today().date():
+            print("Application date must be on or before today's date.")
+            return
+
+        enrollments["pass_fail"] ={"application_date": application_date_str}
 
     #now that we have our objects, we need to find the student we are adding the enrollment to
     #use the information gathered about the student in the beginning
@@ -252,7 +293,7 @@ def add_enrollment(db):
         else:
             print("Enrollment was added successfully")
     except Exception as exception:
-        print("Error adding enrollment")
+        print("Error adding enrollment. Make sure that you enter either A, B, or C for a minimum letter grade to pass")
         print(exception)
 
 
@@ -288,8 +329,6 @@ def list_enrollment(db):
             print("No enrollments found for this student.")
     else:
         print("Student not found. Please check the entered details.")
-
-
 
 
 def delete_enrollment(db):
@@ -333,6 +372,135 @@ def delete_enrollment(db):
     except Exception as exception:
         print("Error deleting enrollment")
         print(exception)
+
+
+def add_student_major(db):
+    #get to the collection
+    collection = db['students']
+
+    #gather some information about the student
+    first_name = input("Enter first name: ")
+    last_name = input("Enter last name: ")
+    email = input("Enter email: ")
+
+    #gather details about the major we are adding to the student
+    major_name = input("Enter major name: ")
+    declaration_date_str = input("Enter declaration date of the major (YYYY-MM-DD): ")
+
+    #make sure date is <= today AND in correct format
+    try:
+        declaration_date = datetime.strptime(declaration_date_str, '%Y-%m-%d').date()
+        if declaration_date > datetime.today().date():
+            print("Declaration date must be on or before today's date.")
+            return
+    except ValueError:
+        print("Invalid date format. Please use YYYY-MM-DD format.")
+        return
+
+    #create the major object now
+    major = {
+        "major_name": major_name,
+        "declaration_date": declaration_date
+    }
+
+    #locate student if exists, and then add the major to it
+    try:
+        student = collection.find_one({"first_name": first_name, "last_name": last_name, "email": email})
+
+        #see if student exists
+        if not student:
+            print("Student does not exist")
+            return
+
+        #if student already enrolled in the major
+        if any(m['major_name'] == major_name for m in student.get('student_majors', [])): #checks for duplicate major
+            print("This student already is enrolled in that major.")
+            return
+
+        #add the major to the student
+        update_result = collection.update_one(
+            {"first_name": first_name, "last_name": last_name, "email": email},
+            {"$push": {"student_majors": major}}
+        )
+        if update_result.modified_count == 0:
+            print("Student Major data was not added. Undefined error")
+        else:
+            print("Student Major data was successfully added")
+    except Exception as exception:
+        print("Error adding major")
+        print(exception)
+
+
+def list_student_major(db):
+    collection = db['students']
+
+    #gather some information about the student
+    first_name = input("Enter first name: ")
+    last_name = input("Enter last name: ")
+    email = input("Enter email: ")
+
+    #find the student in the database if they exist
+    student = collection.find_one(
+        {"first_name": first_name, "last_name": last_name, "email": email}
+    )
+
+    #check if a student was found
+    if student:
+        print(f"\nListing majors for {first_name} {last_name} ({email}):")
+        student_majors = student.get('student_majors', [])
+        if student_majors:
+            for i, major in enumerate(student_majors, 1):
+                print(f"\nMajor {i}:")
+                for key, value in major.items():
+                    print(f"  {key}: {value}")
+        else:
+            print("No majors found for this student")
+    else:
+        print("Student was not found. Please check the details entered for the student")
+
+
+def delete_student_major(db):
+    collection = db['students']
+
+    #gather some information about the student
+    print("Deleting student major...")
+    first_name = input("Enter first name: ")
+    last_name = input("Enter last name: ")
+    email = input("Enter email: ")
+
+    #gather information about the major we wish to delete from the student
+    major_name = input("Enter major for deletion: ")
+
+    try:
+        #make sure student exists first
+        student = collection.find_one(
+            {"first_name": first_name, "last_name": last_name, "email": email}
+        )
+
+        if not student:
+            print("No matching student found. Check the entered student details.")
+            return
+
+        # Check if the student has the major we are trying to delete
+        if not any(major['major_name'] == major_name for major in student.get('student_majors', [])):
+            print(f"The student does not have a major named {major_name}.")
+            return
+
+        # Delete the specific major
+        update_result = collection.update_one(
+            {"first_name": first_name, "last_name": last_name, "email": email},
+            {"$pull": {"student_majors": {"major_name": major_name}}}
+        )
+
+        if update_result.modified_count == 0:
+            print("Major data was not found or not removed.")
+        else:
+            print("Major was deleted successfully.")
+
+    except Exception as exception:
+        print("Error deleting major")
+        print(exception)
+
 
 def add_student(db):
     valid_student = False

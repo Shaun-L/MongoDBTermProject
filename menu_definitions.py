@@ -27,7 +27,7 @@ add_menu = Menu('add', 'Please indicate what you want to add:', [
     #    Option("Major", "add_major(db)"),
     Option("Student", "add_student(db)"),
     Option("Enrollment", "add_enrollment(db)"),
-    #    Option("Major to Student", "add_major_student(db)"),
+    Option("Major to Student", "add_student_major(db)"),
     Option("Major","add_major(db)"),
     Option("Exit", "pass")
 ])
@@ -38,7 +38,7 @@ delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
     #    Option("Major", "delete_major(db)"),
     Option("Student", "delete_student(db)"),
     Option("Enrollment", "delete_enrollment(db)"),
-    #    Option("Major to Student", "delete_major_student(db)"),
+    Option("Major(s) of a specific Student", "delete_student_major(db)"),
     Option("Major","delete_major(db)"),
     Option("Exit", "pass")
 ])
@@ -49,7 +49,7 @@ list_menu = Menu('list', 'Please indicate what you want to list:', [
     #    Option("Major", "list_major(db)"),
     Option("Student", "list_student(db)"),
     Option("Enrollment", "list_enrollment(db)"),
-    #    Option("Major to Student", "list_major_student(db)"),
+    Option("Major(s) of a specific Student", "list_student_major(db)"),
     Option("Major","list_major(db)"),
     Option("Exit", "pass")
 ])

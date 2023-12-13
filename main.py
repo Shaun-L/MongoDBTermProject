@@ -420,8 +420,8 @@ def list_section_student(db):
         print("This section has no students.")
     else:
         for id in refs:
-            student = collection.find_one({"_id": int(id)})
-            pprint(student)
+            student = collection.find_one({"_id": id})
+            print(f"Name: {student['first_name']}, {student['last_name']}\n   Email: {student['email']}")
 
 
 def list_student_section(db):
@@ -879,11 +879,14 @@ def list_course(db):
 
 
 def boilerplate(db):
+    collection = db['majors']
     major = {
         'name': 'Biology',
         'department_abbreviation': 'CECS'
     }
-    students = db['students']
+    collection.insert_one(major)
+
+    collection = db['student']
     student_majors = {
         'major_name': 'CS',
         'declaration_date': '10/30/10'
@@ -901,7 +904,6 @@ def boilerplate(db):
         'type': 'letter_grade',
         'section_details': section_details
     }
-
     student = {
         'first_name': "Jane",
         'last_name': "Smith",
@@ -909,6 +911,7 @@ def boilerplate(db):
         'enrollments': [enrollment],
         'student_majors': [student_majors]
     }
+    collection.insert_one(student)
 
 
 def select_major(db):
@@ -951,11 +954,15 @@ if __name__ == '__main__':
     # Students Collection
     if 'students' not in db.list_collection_names():
         db.create_collection('students', check_exists=True)
-
+    students = db['students']
+    students.create_index(
+        [('first_name', pymongo.ASCENDING), ('last_name', pymongo.ASCENDING), ('email', pymongo.ASCENDING)],
+        unique=True, name='unique_name_email')
     db.command({
         "collMod": "students",
         "validator": students_validator
     })
+
 
     # Majors Collection
     if 'majors' not in db.list_collection_names():
@@ -972,12 +979,11 @@ if __name__ == '__main__':
     # Sections Collection
     if 'sections' not in db.list_collection_names():
         db.create_collection('sections', check_exists=True)
+    sections = db["sections"]
     db.command({
         "collMod": "sections",
         "validator": sections_validator
     })
-
-    sections = db["sections"]
 
     # Courses Collection
     if 'courses' not in db.list_collection_names():

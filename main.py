@@ -775,8 +775,11 @@ def list_major(db):
     collection = db["majors"]
     majors = collection.find({}).sort([("department_abbreviation", pymongo.ASCENDING),
                                        ("name", pymongo.ASCENDING)])
-    for major in majors:
-        print(f"{major['name'] - major['department_abbreviation']}\n\t major['description']")
+    try:
+        for major in majors:
+            print(f"{major['name']} - {major['department_abbreviation']}\n\t {major['description']}")
+    except KeyError:
+        print("A property was searched for that does not exist")
 
 
 def add_course(db):

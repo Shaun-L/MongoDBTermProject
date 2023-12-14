@@ -214,6 +214,7 @@ def list_department(db):
     for department in departments:
         pprint(department)
 
+
 def validating_time():
     valid_time = False
     while not valid_time:
@@ -223,7 +224,7 @@ def validating_time():
         else:
             if time_input[1] == ":":
                 if time_input[5:] == "PM":
-                    if int(time_input[0])== 7 and int(time_input[2:4]) > 30:
+                    if int(time_input[0]) == 7 and int(time_input[2:4]) > 30:
                         print("Invalid input. Class cannot start after 7:30PM")
                         continue
                     elif int(time_input[0]) > 7:
@@ -246,7 +247,7 @@ def validating_time():
                     print("Invalid input. Class cannot start after 7:30PM")
                     continue
                 else:
-                    if(int(time_input[0:2]) > 12):
+                    if (int(time_input[0:2]) > 12):
                         print("Invalid input. Hours are incorrect")
                         continue
                     elif int(time_input[3:5]) > 59:
@@ -257,6 +258,7 @@ def validating_time():
                 print("Invalid input. Structure input like this -> '6:32 PM'.")
 
     return time_input
+
 
 def add_section(db):
     # Notes: add students to student_refs in enrollment, address cascading deletions
@@ -886,13 +888,12 @@ def select_course(db):
                 'department_abbreviation': department_abbreviation,
                 'course_number': course_number
             })
+            if course:
+                return course
+            else:
+                print("No matching course found. Please try again.")
         except Exception:
             print("Error, Try again")
-
-        if course:
-            return course
-        else:
-            print("No matching course found. Please try again.")
 
 
 def delete_course(db):

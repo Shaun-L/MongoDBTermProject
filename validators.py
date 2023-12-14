@@ -108,7 +108,6 @@ sections_validator = {
                 'description': 'must be a string and is required'
             },
             'start_time': {
-                # TODO: add constraint - "startTime >= 8:00AM and <= 7:30PM"
                 'bsonType': 'string',
                 'description': 'must be a string and is required'
             },

@@ -683,6 +683,14 @@ def add_student(db):
             print("Please re-enter your values")
 
 
+def list_student(db):
+    students = db["students"].find({}).sort([("first_name", pymongo.ASCENDING),
+                                             ("last_name", pymongo.ASCENDING),
+                                             ("email", pymongo.ASCENDING)])
+    for student in students:
+        pprint(student)
+
+
 def select_student(db):
     collection = db["students"]
     found: bool = False

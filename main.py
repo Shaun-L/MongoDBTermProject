@@ -731,13 +731,15 @@ def add_major(db):
         # Ask for the department abbreviation and check if it exists
         department_abbreviation = input("Department abbreviation--> ")
         name = input("Major name--> ")
+        description = input(f"Description for {name}--> ")
 
         # Check if the department exists
         department_exists = departments_collection.count_documents({'abbreviation': department_abbreviation}) > 0
 
         major = {
             "name": name,
-            "department_abbreviation": department_abbreviation
+            "department_abbreviation": department_abbreviation,
+            "description": description
         }
 
         try:
@@ -771,9 +773,10 @@ def delete_major(db):
 
 def list_major(db):
     collection = db["majors"]
-    majors = collection.find({})
+    majors = collection.find({}).sort([("department_abbreviation", pymongo.ASCENDING),
+                                       ("name", pymongo.ASCENDING)])
     for major in majors:
-        pprint(major)
+        print(f"{major['name'] - major['department_abbreviation']}\n\t major['description']")
 
 
 def add_course(db):

@@ -176,7 +176,8 @@ majors_validator = {
             },
             'description': {
                 'bsonType': 'string',
-                'description': 'must be a string and is required'
+                'description': 'must be a string and is required',
+                'maxLength': 80
             }
         }
     }

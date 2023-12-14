@@ -577,7 +577,7 @@ def add_student_major(db):
     email = input("Enter email: ")
 
     # gather details about the major we are adding to the student
-    major_name = input("Enter major name: ")
+    major = select_major(db)
     declaration_date_str = input("Enter declaration date of the major (YYYY-MM-DD): ")
 
     # make sure date is <= today AND in correct format
@@ -593,7 +593,7 @@ def add_student_major(db):
 
     # create the major object now
     major = {
-        "major_name": major_name,
+        "major_name": major['name'],
         "declaration_date": declaration_date.strftime('%Y-%m-%d')
     }
 
@@ -607,7 +607,8 @@ def add_student_major(db):
             return
 
         # if student already enrolled in the major
-        if any(m['major_name'] == major_name for m in student.get('student_majors', [])):  # checks for duplicate major
+        if any(m['major_name'] == major['name'] for m in
+               student.get('student_majors', [])):  # checks for duplicate major
             print("This student already is enrolled in that major.")
             return
 
@@ -623,6 +624,16 @@ def add_student_major(db):
     except Exception as exception:
         print("Error adding major")
         pprint(exception)
+
+
+def list_major_student(db):
+    major = select_major(db)
+    students = db['students']
+    for student in students.find({}):
+        major_count = len(student['student_majors'])
+        for i in range(0, major_count):
+            if student['student_majors'][i]['major_name'] == major['name']:
+                print(f"Name: {student['first_name']}, {student['last_name']}\n   Email: {student['email']}")
 
 
 def list_student_major(db):
@@ -723,7 +734,9 @@ def add_student(db):
         student = {
             "first_name": first_name,
             "last_name": last_name,
-            "email": email
+            "email": email,
+            "student_majors": [],
+            "enrollments": []
         }
         try:
             collection.insert_one(student)
@@ -1052,10 +1065,6 @@ if __name__ == '__main__':
         "collMod": "majors",
         "validator": majors_validator
     })
-    majors.create_index(
-        [('name', pymongo.ASCENDING), ('department_abbreviation', pymongo.ASCENDING)],
-        unique=True, name='unique_major')
-
     # Sections Collection
     if 'sections' not in db.list_collection_names():
         db.create_collection('sections', check_exists=True)

@@ -125,7 +125,7 @@ def add_department(db):
             valid_department = True
         except Exception as exception:
             print("We got the following exception from a bad input:")
-            print(exception)
+            pprint(exception)
             print("Please re-enter your values")
 
 
@@ -236,10 +236,12 @@ def validating_time():
                 else:
                     if int(time_input[0]) < 8:
                         print("Invalid input. Class cannot start before 8:00AM")
+                        continue
                     elif int(time_input[2:4]) > 59:
                         print("Invalid input. Minutes are incorrect")
+                        continue
+                    valid_time = True
             elif time_input[2] == ":":
-                valid_time = True
                 if time_input[6:] == "PM":
                     print("Invalid input. Class cannot start after 7:30PM")
                     continue
@@ -250,6 +252,7 @@ def validating_time():
                     elif int(time_input[3:5]) > 59:
                         print("Invalid input. Minutes are incorrect")
                         continue
+                    valid_time = True
             else:
                 print("Invalid input. Structure input like this -> '6:32 PM'.")
 
@@ -306,7 +309,7 @@ def add_section(db):
             valid_section = True
         except Exception as exception:
             print("We got the following exception from a bad input:")
-            print(exception)
+            pprint(exception)
             print("Please re-enter your values")
 
 
@@ -452,7 +455,7 @@ def add_enrollment(db):
             print("Enrollment was added successfully")
     except Exception as exception:
         print("Error adding enrollment. Make sure that you enter either A, B, or C for a minimum letter grade to pass")
-        print(exception)
+        pprint(exception)
 
 
 def list_section_student(db):
@@ -554,7 +557,7 @@ def delete_enrollment(db):
             print("Enrollment was deleted successfully.")
     except Exception as exception:
         print("Error deleting enrollment")
-        print(exception)
+        pprint(exception)
 
 
 def add_student_major(db):
@@ -611,7 +614,7 @@ def add_student_major(db):
             print("Student Major data was successfully added")
     except Exception as exception:
         print("Error adding major")
-        print(exception)
+        pprint(exception)
 
 
 def list_student_major(db):
@@ -682,7 +685,7 @@ def delete_student_major(db):
 
     except Exception as exception:
         print("Error deleting major")
-        print(exception)
+        pprint(exception)
 
 
 def add_student(db):
@@ -719,7 +722,7 @@ def add_student(db):
             valid_student = True
         except Exception as exception:
             print("We got the following exception from a bad input:")
-            print(exception)
+            pprint(exception)
             print("Please re-enter your values")
 
 
@@ -792,6 +795,7 @@ def add_major(db):
             print("This major already exists in this department")
         except Exception as exception:
             print("An error occurred, please re-enter your values")
+            pprint(exception)
 
 
 def delete_major(db):
@@ -854,11 +858,11 @@ def add_course(db):
             valid_course = True
 
         except ValueError as ve:
-            print(f"Error: {ve}")
+            pprint(f"Error: {ve}")
             print("Invalid input. Please enter valid values.")
 
         except Exception as e:
-            print(f"Error: {e}")
+            pprint(f"Error: {e}")
             print("An unexpected error occurred. Please try again.")
 
 

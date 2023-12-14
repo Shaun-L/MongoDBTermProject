@@ -17,7 +17,7 @@ menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Add", "add(db)"),
     Option("List", "list_objects(db)"),
     Option("Delete", "delete(db)"),
-    #    Option("Boilerplate Data", "boilerplate(db)"),
+    Option("Boilerplate Data", "boilerplate(db)"),
     Option("Exit this application", "pass")
 ])
 

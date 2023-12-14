@@ -163,7 +163,7 @@ courses_validator = {
 majors_validator = {
     '$jsonSchema': {
         'bsonType': 'object',
-        'required': ['name', 'department_abbreviation'],
+        'required': ['name', 'department_abbreviation', 'description'],
         'properties': {
             "_id": {},
             'name': {
@@ -173,6 +173,10 @@ majors_validator = {
             'department_abbreviation': {
                 'bsonType': 'string',
                 'description': 'must be a string and is required, referring to the department offering the major'
+            },
+            'description': {
+                'bsonType': 'string',
+                'description': 'must be a string and is required'
             }
         }
     }

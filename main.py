@@ -632,31 +632,14 @@ def list_major_student(db):
 
 
 def list_student_major(db):
-    collection = db['students']
-
-    # gather some information about the student
-    first_name = input("Enter first name: ")
-    last_name = input("Enter last name: ")
-    email = input("Enter email: ")
-
-    # find the student in the database if they exist
-    student = collection.find_one(
-        {"first_name": first_name, "last_name": last_name, "email": email}
-    )
-
-    # check if a student was found
-    if student:
-        print(f"\nListing majors for {first_name} {last_name} ({email}):")
-        student_majors = student.get('student_majors', [])
-        if student_majors:
-            for i, major in enumerate(student_majors, 1):
-                print(f"\nMajor {i}:")
-                for key, value in major.items():
-                    print(f"  {key}: {value}")
-        else:
-            print("No majors found for this student")
-    else:
-        print("Student was not found. Please check the details entered for the student")
+    student = select_student(db)
+    major_count = len(student['student_majors'])
+    if major_count == 0:
+        print("Student is undeclared")
+        return
+    for i in range(0, major_count):
+        print(f"Major: {student['student_majors'][i]['major_name']}")
+        print(f"  Declaration Date: {student['student_majors'][i]['declaration_date']}")
 
 
 def delete_student_major(db):

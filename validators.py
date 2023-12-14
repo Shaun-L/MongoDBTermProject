@@ -4,9 +4,15 @@ students_validator = {
         'required': ['last_name', 'first_name', 'email'],
         'properties': {
             "_id": {},
-            'last_name': {'bsonType': 'string'},
-            'first_name': {'bsonType': 'string'},
-            'email': {'bsonType': 'string'},
+            'last_name': {'bsonType': 'string',
+                          "minLength": 1,
+                          },
+            'first_name': {'bsonType': 'string',
+                           "minLength": 1,
+                           },
+            'email': {'bsonType': 'string',
+                      "minLength": 1,
+                      },
             'enrollments': {
                 'bsonType': 'array',
                 'items': {
@@ -17,10 +23,15 @@ students_validator = {
                         'section_details': {
                             'bsonType': 'object',
                             'items': [
-                                {'bsonType': 'string'},  # Assuming all elements in section_details are strings
+                                {'bsonType': 'string',
+                                 "minLength": 1,
+                                 },  # Assuming all elements in section_details are strings
+
                                 {'bsonType': 'int'},
                                 {'bsonType': 'int'},
-                                {'bsonType': 'string'},
+                                {'bsonType': 'string',
+                                 "minLength": 1,
+                                 },
                                 {'bsonType': 'int'}
                             ],
                         },
@@ -55,8 +66,12 @@ students_validator = {
                     'bsonType': 'object',
                     'required': ['major_name', 'declaration_date'],
                     'properties': {
-                        'major_name': {'bsonType': 'string'},
-                        'declaration_date': {'bsonType': 'string'}  # Assuming declaration_date is a string
+                        'major_name': {'bsonType': 'string',
+                                       "minLength": 1,
+                                       },
+                        'declaration_date': {'bsonType': 'string',
+                                             "minLength": 1,
+                                             }  # Assuming declaration_date is a string
                     }
                 }
             }
@@ -75,7 +90,8 @@ sections_validator = {
             "_id": {},
             'department_abbreviation': {
                 'bsonType': 'string',
-                'description': 'TBD'
+                "minLength": 1,
+                'description': 'short identifier for department'
             },
             'course_number': {
                 'bsonType': 'int',
@@ -109,10 +125,12 @@ sections_validator = {
             },
             'start_time': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required'
             },
             'instructor': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required'
             },
             'student_references': {
@@ -134,6 +152,7 @@ courses_validator = {
             "_id": {},
             'department_abbreviation': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required'
             },
             'course_number': {
@@ -144,10 +163,12 @@ courses_validator = {
             },
             'name': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required'
             },
             'description': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required'
             },
             'units': {
@@ -168,15 +189,18 @@ majors_validator = {
             "_id": {},
             'name': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required'
             },
             'department_abbreviation': {
                 'bsonType': 'string',
+                "minLength": 1,
                 'description': 'must be a string and is required, referring to the department offering the major'
             },
             'description': {
                 'bsonType': 'string',
                 'description': 'must be a string and is required',
+                "minLength": 1,
                 'maxLength': 80
             }
         }

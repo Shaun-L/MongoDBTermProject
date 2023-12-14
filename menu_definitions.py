@@ -38,7 +38,7 @@ delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
     Option("Section", "delete_section(db)"),
     Option("Student", "delete_student(db)"),
     Option("Enrollment", "delete_enrollment(db)"),
-    Option("Major(s) of a specific Student", "delete_student_major(db)"),
+    Option("Major of a specific Student", "delete_student_major(db)"),
     Option("Major", "delete_major(db)"),
     Option("Exit", "pass")
 ])

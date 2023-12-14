@@ -608,13 +608,11 @@ def add_student_major(db):
                 print("This student already is enrolled in that major.")
                 raise Exception
 
-            print("test")
             # add the major to the student
             update_result = collection.update_one(
                 {"first_name": student['first_name'], "last_name": student['last_name'], "email": student['email']},
                 {"$push": {"student_majors": adding_major}}
             )
-            print("test")
             if update_result.modified_count == 0:
                 print("Student Major data was not added. Undefined error")
                 raise Exception
@@ -987,6 +985,7 @@ def select_major(db):
     major_name = ''
 
     while not found:
+        # I realise that this argument is redundant, but I like it :D
         department_abbreviation = input("Department abbreviation --> ")
         major_name = input("Major name --> ")
 
@@ -1037,6 +1036,9 @@ if __name__ == '__main__':
         "collMod": "majors",
         "validator": majors_validator
     })
+    majors.create_index(
+        [('name', pymongo.ASCENDING)],
+        unique=True, name='unique_major')
     # Sections Collection
     if 'sections' not in db.list_collection_names():
         db.create_collection('sections', check_exists=True)

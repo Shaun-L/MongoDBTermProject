@@ -572,9 +572,7 @@ def add_student_major(db):
     collection = db['students']
 
     # gather some information about the student
-    first_name = input("Enter first name: ")
-    last_name = input("Enter last name: ")
-    email = input("Enter email: ")
+    student = select_student(db)
 
     # gather details about the major we are adding to the student
     major = select_major(db)
@@ -599,28 +597,25 @@ def add_student_major(db):
 
     # locate student if exists, and then add the major to it
     try:
-        student = collection.find_one({"first_name": first_name, "last_name": last_name, "email": email})
-
-        # see if student exists
-        if not student:
-            print("Student does not exist")
-            return
-
         # if student already enrolled in the major
         if any(m['major_name'] == major['name'] for m in
                student.get('student_majors', [])):  # checks for duplicate major
             print("This student already is enrolled in that major.")
-            return
+            raise Exception
 
         # add the major to the student
         update_result = collection.update_one(
-            {"first_name": first_name, "last_name": last_name, "email": email},
+            {"first_name": student['first_name'], "last_name": student['last_name'], "email": student['email']},
             {"$push": {"student_majors": major}}
         )
         if update_result.modified_count == 0:
             print("Student Major data was not added. Undefined error")
+            raise Exception
         else:
             print("Student Major data was successfully added")
+    except errors.DuplicateKeyError as dke:
+        print("Student is already inside this major")
+        pprint(dke)
     except Exception as exception:
         print("Error adding major")
         pprint(exception)
@@ -666,45 +661,31 @@ def list_student_major(db):
 
 def delete_student_major(db):
     collection = db['students']
-
-    # gather some information about the student
     print("Deleting student major...")
-    first_name = input("Enter first name: ")
-    last_name = input("Enter last name: ")
-    email = input("Enter email: ")
 
-    # gather information about the major we wish to delete from the student
-    major_name = input("Enter major for deletion: ")
-
-    try:
-        # make sure student exists first
-        student = collection.find_one(
-            {"first_name": first_name, "last_name": last_name, "email": email}
-        )
-
-        if not student:
-            print("No matching student found. Check the entered student details.")
+    valid_deletion = False
+    while not valid_deletion:
+        student = select_student(db)
+        major_count = len(student['student_majors'])
+        if major_count == 0:
+            print("Student is undeclared")
             return
 
-        # Check if the student has the major we are trying to delete
-        if not any(major['major_name'] == major_name for major in student.get('student_majors', [])):
-            print(f"The student does not have a major named {major_name}.")
-            return
-
-        # Delete the specific major
-        update_result = collection.update_one(
-            {"first_name": first_name, "last_name": last_name, "email": email},
-            {"$pull": {"student_majors": {"major_name": major_name}}}
-        )
-
-        if update_result.modified_count == 0:
-            print("Major data was not found or not removed.")
-        else:
-            print("Major was deleted successfully.")
-
-    except Exception as exception:
-        print("Error deleting major")
-        pprint(exception)
+        major = select_major(db)
+        try:
+            update_result = collection.update_one(
+                {"first_name": student['first_name'], "last_name": student['last_name'], "email": student['email']},
+                {"$pull": {"student_majors": {"major_name": major['name']}}}
+            )
+            if update_result.modified_count == 0:
+                print("Major data was not found or not removed.")
+                raise Exception
+            else:
+                print("Major was deleted successfully.")
+                valid_deletion = True
+        except Exception as exception:
+            print("Error deleting major")
+            pprint(exception)
 
 
 def add_student(db):

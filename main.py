@@ -1,6 +1,6 @@
 import certifi as certifi
 import pymongo
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 from pprint import pprint
 import getpass
 from menu_definitions import menu_main
@@ -543,7 +543,7 @@ def add_student_major(db):
     # create the major object now
     major = {
         "major_name": major_name,
-        "declaration_date": declaration_date
+        "declaration_date": declaration_date.strftime('%Y-%m-%d')
     }
 
     # locate student if exists, and then add the major to it
@@ -688,7 +688,7 @@ def list_student(db):
                                              ("last_name", pymongo.ASCENDING),
                                              ("email", pymongo.ASCENDING)])
     for student in students:
-        pprint(student)
+        print(f"Name: {student['first_name']}, {student['last_name']}\n   Email: {student['email']}")
 
 
 def select_student(db):
@@ -728,19 +728,12 @@ def add_major(db):
     departments_collection = db["departments"]
 
     while not valid_major:
-        unique_major = False
-        name = ''
-        department_abbreviation = ''
-
         # Ask for the department abbreviation and check if it exists
-
         department_abbreviation = input("Department abbreviation--> ")
+        name = input("Major name--> ")
 
         # Check if the department exists
         department_exists = departments_collection.count_documents({'abbreviation': department_abbreviation}) > 0
-
-        if not department_exists:
-            print("Department does not exist. Please enter a valid department abbreviation.")
 
         major = {
             "name": name,
@@ -748,25 +741,32 @@ def add_major(db):
         }
 
         try:
+            if not department_exists:
+                print("Department does not exist.")
+                raise Exception
+
             majors_collection.insert_one(major)
             print("Successfully added major.")
             valid_major = True
+        except errors.DuplicateKeyError as exception:
+            print("This major already exists in this department")
         except Exception as exception:
-            print("We got the following exception from a bad input:")
-            print(exception)
-            print("Please re-enter your values")
+            print("An error occurred, please re-enter your values")
 
 
 def delete_major(db):
     # Use the select_major function to choose the major to delete
     selected_major = select_major(db)
 
-    if selected_major:
-        collection = db["majors"]
-        deleted = collection.delete_one({"_id": selected_major["_id"]})
-        print(f"We just deleted: {deleted.deleted_count} major.")
-    else:
-        print("No major found.")
+    valid_major = False
+    while not valid_major:
+        if selected_major:
+            collection = db["majors"]
+            deleted = collection.delete_one({"_id": selected_major["_id"]})
+            print(f"We just deleted: {deleted.deleted_count} major(s)")
+            valid_major = True
+        else:
+            print("No major found.")
 
 
 def list_major(db):

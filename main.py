@@ -746,7 +746,6 @@ def select_student(db):
         found = name_email_count == 1
         if not found:
             print("No student found by that name and email.  Try again.")
-    # found_department = collection.find_one({"name": name, "abbreviation": abbreviation})
     found_student = collection.find_one(
         {"first_name": first_name, "last_name": last_name, "email": email})
     return found_student
@@ -817,7 +816,7 @@ def list_major(db):
                                        ("name", pymongo.ASCENDING)])
     try:
         for major in majors:
-            print(f"{major['name']} - {major['department_abbreviation']}\n\t {major['description']}")
+            print(f"{major['department_abbreviation']} - {major['name']}\n\t {major['description']}")
     except KeyError:
         print("A property was searched for that does not exist")
 
@@ -842,8 +841,6 @@ def add_course(db):
             description = input("Course description: ")
             units = int(input("Course units: "))
 
-            # Check for existing course
-
             # Create course
             course = {
                 "department_abbreviation": department_abbreviation,
@@ -862,7 +859,8 @@ def add_course(db):
         except ValueError as ve:
             print(f"Error: {ve}")
             print("Invalid input. Please enter valid values.")
-
+        except errors.DuplicateKeyError:
+            print("Duplicate course. New course must be unique")
         except Exception as e:
             print(f"Error: {e}")
             print("An unexpected error occurred. Please try again.")
@@ -872,16 +870,20 @@ def select_course(db):
     # Get the "courses" collection
     courses = db["courses"]
 
-    while True:
+    valid_course = False
+    while not valid_course:
         # Gather information about the course
         department_abbreviation = input("Enter the department abbreviation: ")
         course_number = int(input("Enter the course number: "))
 
         # Find the course based on the provided department abbreviation and course number
-        course = courses.find_one({
-            'department_abbreviation': department_abbreviation,
-            'course_number': course_number
-        })
+        try:
+            course = courses.find_one({
+                'department_abbreviation': department_abbreviation,
+                'course_number': course_number
+            })
+        except Exception:
+            print("Error, Try again")
 
         if course:
             return course

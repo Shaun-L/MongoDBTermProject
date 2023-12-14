@@ -571,54 +571,62 @@ def add_student_major(db):
     # get to the collection
     collection = db['students']
 
-    # gather some information about the student
-    student = select_student(db)
+    valid_addition = False
+    while not valid_addition:
+        student = select_student(db)
+        major = select_major(db)
+        declaration_date = input("Enter declaration date of the major (YYYY-MM-DD): ")
 
-    # gather details about the major we are adding to the student
-    major = select_major(db)
-    declaration_date_str = input("Enter declaration date of the major (YYYY-MM-DD): ")
+        valid_date = False
+        while not valid_date:
+            try:
+                declaration_date = datetime.strptime(declaration_date, '%Y-%m-%d').date()
+                if declaration_date > datetime.today().date():
+                    print("Declaration date must be on or before today's date.")
+                    raise Exception
+                else:
+                    valid_date = True
+            except ValueError as ve:
+                print("Invalid date format. Please use YYYY-MM-DD format.")
+                pprint(ve)
+                continue
+            except Exception as e:
+                pprint(e)
+                continue
 
-    # make sure date is <= today AND in correct format
-    try:
-        declaration_date = datetime.strptime(declaration_date_str, '%Y-%m-%d').date()
-        if declaration_date > datetime.today().date():
-            print("Declaration date must be on or before today's date.")
-            return
-    except ValueError as ve:
-        print("Invalid date format. Please use YYYY-MM-DD format.")
-        pprint(ve)
-        return
+        # create the major object now
+        adding_major = {
+            "major_name": major['name'],
+            "declaration_date": declaration_date.strftime('%Y-%m-%d')
+        }
 
-    # create the major object now
-    major = {
-        "major_name": major['name'],
-        "declaration_date": declaration_date.strftime('%Y-%m-%d')
-    }
+        # locate student if exists, and then add the major to it
+        try:
+            # if student already enrolled in the major
+            if any(m['major_name'] == major['name'] for m in
+                   student.get('student_majors', [])):  # checks for duplicate major
+                print("This student already is enrolled in that major.")
+                raise Exception
 
-    # locate student if exists, and then add the major to it
-    try:
-        # if student already enrolled in the major
-        if any(m['major_name'] == major['name'] for m in
-               student.get('student_majors', [])):  # checks for duplicate major
-            print("This student already is enrolled in that major.")
-            raise Exception
-
-        # add the major to the student
-        update_result = collection.update_one(
-            {"first_name": student['first_name'], "last_name": student['last_name'], "email": student['email']},
-            {"$push": {"student_majors": major}}
-        )
-        if update_result.modified_count == 0:
-            print("Student Major data was not added. Undefined error")
-            raise Exception
-        else:
-            print("Student Major data was successfully added")
-    except errors.DuplicateKeyError as dke:
-        print("Student is already inside this major")
-        pprint(dke)
-    except Exception as exception:
-        print("Error adding major")
-        pprint(exception)
+            print("test")
+            # add the major to the student
+            update_result = collection.update_one(
+                {"first_name": student['first_name'], "last_name": student['last_name'], "email": student['email']},
+                {"$push": {"student_majors": adding_major}}
+            )
+            print("test")
+            if update_result.modified_count == 0:
+                print("Student Major data was not added. Undefined error")
+                raise Exception
+            else:
+                print("Student Major data was successfully added")
+                valid_addition = True
+        except errors.DuplicateKeyError as dke:
+            print("Student is already inside this major")
+            pprint(dke)
+        except Exception as exception:
+            print("Error adding major")
+            pprint(exception)
 
 
 def list_major_student(db):

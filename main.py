@@ -395,6 +395,9 @@ def add_enrollment(db):
     # gather some information about enrollment
     # gather some information about enrollment
     enrollment_type = input("(string) Choose an enrollment type (letter_grade / pass_fail): ")
+    while enrollment_type not in ['letter_grade', 'pass_fail']:
+        enrollment_type = input("Not a valid choice. (letter_grade / pass_fail): ")
+
     enrollments = {
         "type": enrollment_type,
         "section_details": section_details
@@ -410,24 +413,26 @@ def add_enrollment(db):
         letter_grade = input("Specify the minimum letter grade to pass (A/B/C): ")
         enrollments["letter_grade"] = {"min_satisfactory": letter_grade}
     elif enrollment_type == "pass_fail":
-        application_date = input("Specify the Pass/Fail appilcation date (DD-MM-YYYY): ")
-        enrollments["pass_fail"] = {"application_date": application_date}
-        application_date_str = input(
-            "Specify the Pass/Fail appilcation date. Must be on or before today's date. (YYYY-MM-DD): ")
+        application_date = ''
+        valid_date = False
+        while not valid_date:
+            application_date = input("Specify the Pass/Fail application date (YYYY-MM-DD): ")
 
-        # TO CHECK FOR DATE FORMAT & DATE <= TODAY
-        try:
-            application_date = datetime.strptime(application_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            print("Invalid date format. Please use YYYY-MM-DD format.")
-            return
+            # TO CHECK FOR DATE FORMAT & DATE <= TODAY
+            try:
+                application_date = datetime.strptime(application_date, '%Y-%m-%d').date()
+                if application_date > datetime.today().date():
+                    print("Application date must be on or before today's date.")
+                    raise Exception
+                valid_date = True
+            except ValueError as ve:
+                print("Invalid date/format")
+                pprint(ve)
+            except Exception as e:
+                print("Something went wrong. Try again")
+                pprint(e)
 
-            # Check if the application date is on or before today's date
-        if application_date > datetime.today().date():
-            print("Application date must be on or before today's date.")
-            return
-
-        enrollments["pass_fail"] = {"application_date": application_date_str}
+        enrollments["pass_fail"] = {"application_date": application_date.strftime('%Y-%m-%d')}
 
     # now that we have our objects, we need to find the student we are adding the enrollment to
     # use the information gathered about the student in the beginning

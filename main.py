@@ -586,8 +586,9 @@ def add_student_major(db):
         if declaration_date > datetime.today().date():
             print("Declaration date must be on or before today's date.")
             return
-    except ValueError:
+    except ValueError as ve:
         print("Invalid date format. Please use YYYY-MM-DD format.")
+        pprint(ve)
         return
 
     # create the major object now
@@ -801,6 +802,7 @@ def add_major(db):
             valid_major = True
         except errors.DuplicateKeyError as exception:
             print("This major already exists in this department")
+            pprint(exception)
         except Exception as exception:
             print("An error occurred, please re-enter your values")
             pprint(exception)
@@ -828,8 +830,9 @@ def list_major(db):
     try:
         for major in majors:
             print(f"{major['department_abbreviation']} - {major['name']}\n\t {major['description']}")
-    except KeyError:
+    except KeyError as ve:
         print("A property was searched for that does not exist")
+        pprint(ve)
 
 
 def add_course(db):
@@ -868,13 +871,14 @@ def add_course(db):
             valid_course = True
 
         except ValueError as ve:
-            pprint(f"Error: {ve}")
             print("Invalid input. Please enter valid values.")
-        except errors.DuplicateKeyError:
+            pprint(f"Error: {ve}")
+        except errors.DuplicateKeyError as dke:
             print("Duplicate course. New course must be unique")
+            pprint(dke)
         except Exception as e:
-            pprint(f"Error: {e}")
             print("An unexpected error occurred. Please try again.")
+            pprint(f"Error: {e}")
 
 
 def select_course(db):
@@ -897,8 +901,9 @@ def select_course(db):
                 return course
             else:
                 print("No matching course found. Please try again.")
-        except Exception:
+        except Exception as e:
             print("Error, Try again")
+            pprint(e)
 
 
 def delete_course(db):

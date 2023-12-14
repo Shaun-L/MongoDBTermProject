@@ -25,36 +25,32 @@ add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Department", "add_department(db)"),
     Option("Major", "add_major(db)"),
     Option("Course", "add_course(db)"),
-    #    Option("Major", "add_major(db)"),
     Option("Section", "add_section(db)"),
     Option("Student", "add_student(db)"),
     Option("Enrollment", "add_enrollment(db)"),
     Option("Major to Student", "add_student_major(db)"),
-    Option("Major","add_major(db)"),
     Option("Exit", "pass")
 ])
 
 delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
     Option("Department", "delete_department(db)"),
     Option("Course", "delete_course(db)"),
-    #    Option("Major", "delete_major(db)"),
     Option("Section", "delete_section(db)"),
     Option("Student", "delete_student(db)"),
     Option("Enrollment", "delete_enrollment(db)"),
     Option("Major(s) of a specific Student", "delete_student_major(db)"),
-    Option("Major","delete_major(db)"),
+    Option("Major", "delete_major(db)"),
     Option("Exit", "pass")
 ])
 
 list_menu = Menu('list', 'Please indicate what you want to list:', [
     Option("Department", "list_department(db)"),
     Option("Course", "list_course(db)"),
-    #    Option("Major", "list_major(db)"),
     Option("Section", "list_section(db)"),
     Option("Student", "list_student(db)"),
     Option("Section to Student", "list_section_student(db)"),
     Option("Student to Section", "list_student_section(db)"),
     Option("Major(s) of a specific Student", "list_student_major(db)"),
-    Option("Major","list_major(db)"),
+    Option("Major", "list_major(db)"),
     Option("Exit", "pass")
 ])

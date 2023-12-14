@@ -214,6 +214,46 @@ def list_department(db):
     for department in departments:
         pprint(department)
 
+def validating_time():
+    valid_time = False
+    while not valid_time:
+        time_input = input("Starting time: ")
+        if len(time_input) != 7 and len(time_input) != 8:
+            print("Invalid input. Structure input like this -> '6:32 PM'.")
+        else:
+            if time_input[1] == ":":
+                if time_input[5:] == "PM":
+                    if int(time_input[0])== 7 and int(time_input[2:4]) > 30:
+                        print("Invalid input. Class cannot start after 7:30PM")
+                        continue
+                    elif int(time_input[0]) > 7:
+                        print("Invalid input. Class cannot start after 7:30PM")
+                        continue
+                    elif int(time_input[2:4]) > 59:
+                        print("Invalid input. Minutes are incorrect")
+                        continue
+                    valid_time = True
+                else:
+                    if int(time_input[0]) < 8:
+                        print("Invalid input. Class cannot start before 8:00AM")
+                    elif int(time_input[2:4]) > 59:
+                        print("Invalid input. Minutes are incorrect")
+            elif time_input[2] == ":":
+                valid_time = True
+                if time_input[6:] == "PM":
+                    print("Invalid input. Class cannot start after 7:30PM")
+                    continue
+                else:
+                    if(int(time_input[0:2]) > 12):
+                        print("Invalid input. Hours are incorrect")
+                        continue
+                    elif int(time_input[3:5]) > 59:
+                        print("Invalid input. Minutes are incorrect")
+                        continue
+            else:
+                print("Invalid input. Structure input like this -> '6:32 PM'.")
+
+    return time_input
 
 def add_section(db):
     # Notes: add students to student_refs in enrollment, address cascading deletions
@@ -244,7 +284,7 @@ def add_section(db):
         building = input("Building name: ")
         room = int(input("Room number: "))
         schedule = input("Schedule(Days): ")
-        start_time = input("Start time: ")
+        start_time = validating_time()
         instructor = input("Instructor name: ")
 
         section = {
